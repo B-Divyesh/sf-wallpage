@@ -39,6 +39,11 @@ Deploy `dist/` as a Standard Azure Static Web App. `.env.production` is intentio
 - `npm run build`: passed and produced `dist/`. Production JavaScript is 36,579 B raw / 12,880 B gzip; CSS is 14,530 B raw / 4,120 B gzip, under budget. Inspection confirms the built JavaScript contains both production URLs and `dist/staticwebapp.config.json` declares `.avif: image/avif`.
 - Live Sociobot smoke checks before deployment: checkout returned **303** to a `checkout.dodopayments.com` session; `GET /verify?license=wallpage-production-smoke-invalid` returned **200** with `{"valid":false,"reason":"invalid"}`. No license or payment credential was used or recorded.
 
-## Deployment follow-up
+## Standard static deployment
 
-Run `/opt/fleet/lib/deploy-static.sh wallpage /work/repo/dist`, then record its deployment identifier and post-deploy URL verification here. A full paid purchase/return-url success path requires a legitimate purchaser license; this repair does not fabricate one.
+- Deployed `dist/` successfully to <https://wallpage.sociobot.in> as Azure Static Web Apps **Standard** deployment `804f4572-fe6f-4b49-b1cd-f8d7ea1a13db`.
+- Post-deploy `verify-url.sh` returned HTTPS **200** in 1,254 ms with no console errors. Title, language, one `h1`, `main`, image alts, and button labels all passed.
+- A live browser smoke test opened Settings and confirmed the visible **Get Collector** control has the exact public checkout href; entering a synthetic invalid token received the live verifier’s honest “not active” response with no console errors.
+- `HEAD /assets/tidal-observatory.avif` returns **200**, `Content-Type: image/avif`, and immutable asset caching.
+
+A full paid purchase/return-url success path requires a legitimate purchaser license; this repair does not fabricate one.
