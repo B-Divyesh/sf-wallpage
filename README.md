@@ -22,10 +22,12 @@ Vite prints the local URL. Open it in a modern browser; no environment variables
 ```sh
 npm test
 npm run build
+npm run check:budget
 npm run preview
 ```
 
 The production command is exactly `npm run build`. It type-checks the app and writes the static deploy to `dist/`, with `dist/index.html` at the root. Azure Static Web Apps reads `staticwebapp.config.json` from that output.
+`npm run check:budget` rebuilds and enforces the static product limits for initial JavaScript (200 KB), CSS (50 KB), poster formats (300 KB each), and WOFF2 fonts (120 KB each).
 
 ## Controls
 
@@ -45,7 +47,7 @@ Copy `.env.example` to `.env.local` for a local Collector configuration. Product
 
 ## Architecture and privacy
 
-Wallpage is Vite + vanilla TypeScript. Scene algorithms live in `src/scenes.ts`; local settings and deterministic seed helpers live in `src/core.ts`. The build stamps the service-worker cache and manifest start URL from the emitted shell fingerprint, so each release installs as a distinct worker; navigation is network-first with an offline shell fallback. No analytics or tracking calls are made. `/privacy` and `/terms` are application routes with plain-language policies.
+Wallpage is Vite + vanilla TypeScript. The compact scene catalog lives in `src/scene-catalog.ts`; Canvas algorithms load from `src/scenes.ts` after gallery entry or during a returning visitor’s idle time. Local settings and deterministic seed helpers live in `src/core.ts`. The build stamps the service-worker cache and manifest start URL from the emitted shell fingerprint, so each release installs as a distinct worker; navigation is network-first with an offline shell fallback. No analytics or tracking calls are made. `/privacy` and `/terms` are application routes with plain-language policies.
 
 The visual thesis and generated-art provenance are in `.factory/design.md` and `assets/src/tidal-observatory.prompt.json`. The high-resolution PNG is retained as source; the shipped 1200 × 800 AVIF, WebP, and JPEG fallbacks are each under 40 KB.
 
