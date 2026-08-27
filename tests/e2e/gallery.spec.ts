@@ -79,6 +79,10 @@ test('Collector unlocks only after a positive signed entitlement response', asyn
   await page.goto('/');
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/Collector is active for this session/);
+  // .secondary-button is an inline-flex utility. The semantic hidden state
+  // must still remove both mutually-exclusive Collector controls from view.
+  await expect(page.locator('#buy-collector')).toBeHidden();
+  await expect(page.locator('#show-license')).toBeHidden();
   await page.getByRole('button', { name: 'Close settings' }).click();
   await page.getByRole('button', { name: 'Open scene library' }).click();
   await page.locator('[data-scene="fault-garden"]').click();

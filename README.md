@@ -41,7 +41,7 @@ All actions also have 44 px pointer/remote-friendly buttons. Controls fade durin
 
 ## Collector billing
 
-Copy `.env.example` to `.env.local` and supply the deployment-provided Sociobot checkout URL and exact product verification URL (for example, `https://api.sociobot.in/api/v1/products/wallpage/verify`). The browser calls `GET <verifier>?license=<token>` only to verify a restored or pasted license. A local token or old local-storage flag never unlocks Collector: each session requires an active server verdict, and paid scenes remain locked offline or on an error. Payment providers are never embedded directly and Vite variables must never contain secrets.
+Copy `.env.example` to `.env.local` for a local Collector configuration. Production uses the committed, public-only `.env.production` URLs for the registered Wallpage Sociobot checkout and verifier. The browser calls `GET <verifier>?license=<token>` only to verify a restored or pasted license. A local token or old local-storage flag never unlocks Collector: each session requires an active server verdict, and paid scenes remain locked offline or on an error. Payment providers are never embedded directly and Vite variables must never contain secrets.
 
 ## Architecture and privacy
 

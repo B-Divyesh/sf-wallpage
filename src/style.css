@@ -18,6 +18,10 @@
 
 * { box-sizing: border-box; }
 
+/* The HTML hidden state is semantic and must also win against reusable
+   display utilities such as .secondary-button. */
+[hidden] { display: none !important; }
+
 html, body, #app { min-height: 100%; margin: 0; }
 
 body {
