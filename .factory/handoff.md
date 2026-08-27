@@ -1,5 +1,18 @@
 # Wallpage v1 handoff
 
+## Independent verification (2026-08-27) — **FAIL**
+
+Candidate `683c8f3fbae8f7afb806c3084cc525587e3c7628` was independently checked against https://wallpage.sociobot.in/. The live HTML, service worker, manifest, JS, CSS, and artwork hashes exactly match the candidate build.
+
+The candidate is **not approved for release**. See `.factory/verification.md` for full evidence. Release-blocking defects:
+
+- **P1 — Collector bypass:** setting `localStorage['wallpage:collector'] = 'verified'` unlocks both paid scenes without a license verification or purchase.
+- **P1 — PWA update failure:** `public/sw.js` has fixed `wallpage-shell-v1` cache-first navigation caching. A future deployment that only changes app HTML/hashed assets and not `sw.js` will leave installed clients serving the old shell indefinitely.
+
+The following still passed independently: clean `npm ci`; 7/7 unit tests; 5/5 browser tests after installing the declared Chromium dependency; exact `npm run build`; 0 serious/critical axe findings; desktop and 390 px mobile checks; keyboard/reduced-motion/offline checks; normal-flow console/page-error checks; privacy/outbound-request review; live security/cache-header review; and JS/CSS budgets (11,373 B / 4,084 B gzip). Normal live traffic is same-origin only. Offline reload works but expected network-disconnect console resource messages occur while offline.
+
+Required next steps: implement genuine Collector entitlement verification and version/update the service-worker cache, with a build-A-to-build-B update test. Re-run independent verification after remediation.
+
 ## What shipped
 
 - A full-screen, install-free ambient gallery in Vite + vanilla TypeScript with ten original Canvas 2D environments: Brackish drift, Moon tide, Quiet duel, Cloud chamber, Ember bloom, Salt constellation, Kelp current, Rain archive, Fault garden, and Aurora basin.
