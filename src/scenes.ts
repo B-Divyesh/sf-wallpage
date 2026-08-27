@@ -1,25 +1,7 @@
 import { hashSeed, randomFrom } from './core';
+import { scenes } from './scene-catalog';
 
-export type SceneDefinition = {
-  id: string;
-  title: string;
-  index: string;
-  description: string;
-  collector?: boolean;
-};
-
-export const scenes: SceneDefinition[] = [
-  { id: 'brackish-drift', index: '01', title: 'Brackish drift', description: 'Fine luminous currents wander through deep estuary water.' },
-  { id: 'moon-tide', index: '02', title: 'Moon tide', description: 'Layered tidal contours move beneath a low copper moon.' },
-  { id: 'quiet-duel', index: '03', title: 'Quiet duel', description: 'Two patient colonies trade a soft cellular frontier.' },
-  { id: 'cloud-chamber', index: '04', title: 'Cloud chamber', description: 'Storm vapor gathers, opens, and dissolves in slow strata.' },
-  { id: 'ember-bloom', index: '05', title: 'Ember bloom', description: 'A dark botanical flame draws itself from orbiting embers.' },
-  { id: 'salt-constellation', index: '06', title: 'Salt constellation', description: 'Mineral points find temporary neighbors across a night basin.' },
-  { id: 'kelp-current', index: '07', title: 'Kelp current', description: 'Long submerged ribbons lean into an unseen tide.' },
-  { id: 'rain-archive', index: '08', title: 'Rain archive', description: 'Weather marks fall through a quiet field of reflected light.' },
-  { id: 'fault-garden', index: '09', title: 'Fault garden', description: 'Collector scene — geological cells breathe along illuminated seams.', collector: true },
-  { id: 'aurora-basin', index: '10', title: 'Aurora basin', description: 'Collector scene — veils of mineral light fold over a black horizon.', collector: true },
-];
+export { scenes } from './scene-catalog';
 
 type Particle = { x: number; y: number; age: number; speed: number; offset: number };
 type RenderState = { particles: Particle[]; width: number; height: number };
@@ -328,9 +310,20 @@ export class SceneRenderer {
   }
 
   stop() { cancelAnimationFrame(this.animation); }
-  setPaused(paused: boolean) { this.paused = paused; if (paused) this.render(performance.now()); }
+  // A paused welcome/reduced-motion view deliberately leaves the poster in
+  // place. Drawing a full-resolution canvas synchronously here was a large
+  // startup task on throttled phones.
+  setPaused(paused: boolean) { this.paused = paused; }
   setMaxFps(fps: number) { this.maxFps = fps; this.effectiveFps = Math.min(this.effectiveFps, fps); }
-  setScene(id: string, seed: string) { this.sceneId = id; this.seed = seed; this.state = { particles: [], width: 0, height: 0 }; this.render(performance.now()); }
+  setScene(id: string, seed: string) {
+    this.sceneId = id;
+    this.seed = seed;
+    this.state = { particles: [], width: 0, height: 0 };
+    // Let input and DOM state paint before any scene-change draw. A scene
+    // selection remains immediate to the eye, without making the input task
+    // responsible for canvas rasterization.
+    if (!this.paused) requestAnimationFrame((time) => this.render(time));
+  }
 
   private resize() {
     const ratio = Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1.35 : 1.65);

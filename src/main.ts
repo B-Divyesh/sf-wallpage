@@ -1,7 +1,8 @@
 import './style.css';
 import { defaultSettings, isWithinNightSchedule, readSettings, seedOfDay } from './core';
 import { LICENSE_STORAGE_KEY, type EntitlementReason, verifyEntitlement } from './entitlement';
-import { SceneRenderer, scenes } from './scenes';
+import { scenes } from './scene-catalog';
+import type { SceneRenderer } from './scenes';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -160,16 +161,37 @@ function renderGallery() {
   const settingsDialog = document.querySelector<HTMLDialogElement>('#settings-dialog')!;
   const helpDialog = document.querySelector<HTMLDialogElement>('#help-dialog')!;
   const sceneGrid = document.querySelector<HTMLElement>('#scene-grid')!;
+  gallery.classList.toggle('poster-mode', reducedMotion);
   let renderer: SceneRenderer | null = null;
+  let rendererLoading: Promise<SceneRenderer | null> | null = null;
 
-  try {
-    renderer = new SceneRenderer(canvas);
-    renderer.setMaxFps(settings.maxFps);
-    renderer.setPaused(paused);
-    renderer.start();
-  } catch {
-    gallery.classList.add('canvas-error');
-    showToast('Live canvas is unavailable. Showing the still environment instead.');
+  function startRenderer() {
+    if (renderer) return Promise.resolve(renderer);
+    if (rendererLoading) return rendererLoading;
+    // Canvas algorithms are intentionally not parsed or run while the
+    // welcome/poster has focus. This turns the first view into a small,
+    // paintable shell and reserves expensive drawing for an explicit gallery
+    // entry or a later idle opportunity for returning visitors.
+    rendererLoading = import('./scenes').then(({ SceneRenderer: CanvasRenderer }) => {
+      const next = new CanvasRenderer(canvas);
+      next.setMaxFps(settings.maxFps);
+      next.setPaused(paused);
+      next.setScene(scenes[activeIndex].id, seed);
+      next.start();
+      renderer = next;
+      return next;
+    }).catch(() => {
+      gallery.classList.add('canvas-error');
+      showToast('Live canvas is unavailable. Showing the still environment instead.');
+      return null;
+    });
+    return rendererLoading;
+  }
+
+  function startRendererWhenIdle() {
+    const begin = () => { void startRenderer(); };
+    if ('requestIdleCallback' in window) window.requestIdleCallback(begin, { timeout: 2500 });
+    else setTimeout(begin, 250);
   }
 
   function showModal(dialog: HTMLDialogElement) {
@@ -416,6 +438,7 @@ function renderGallery() {
       pauseButton.innerHTML = icon('pause');
       pauseButton.setAttribute('aria-label', 'Pause animation');
     }
+    void startRenderer();
     wakeChrome();
   });
 
@@ -482,14 +505,13 @@ function renderGallery() {
   addEventListener('offline', updateConnection);
   addEventListener('beforeunload', () => renderer?.stop());
 
-  drawSceneGrid();
   setScene(activeIndex);
   applySettings();
   updateClock();
   updateConnection();
   window.setInterval(updateClock, 1000);
   if (!settings.seenWelcome) showModal(welcome);
-  else wakeChrome();
+  else { wakeChrome(); startRendererWhenIdle(); }
   if (reducedMotion) showToast('Animation paused to respect reduced motion.');
 
   const savedLicense = localStorage.getItem(LICENSE_STORAGE_KEY);

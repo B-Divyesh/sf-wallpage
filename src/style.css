@@ -88,10 +88,16 @@ a:hover { color: var(--ember); }
 .scene-fallback {
   z-index: -3;
   background-color: #081210;
-  background-image: image-set(url('/assets/tidal-observatory.avif') type('image/avif'), url('/assets/tidal-observatory.webp') type('image/webp'), url('/assets/tidal-observatory.jpg') type('image/jpeg'));
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+}
+
+/* Do not decode the poster twice during the welcome paint. It remains the
+   resilient fallback if Canvas is unavailable and the reduced-motion still. */
+.canvas-error .scene-fallback,
+.poster-mode .scene-fallback {
+  background-image: image-set(url('/assets/tidal-observatory.avif') type('image/avif'), url('/assets/tidal-observatory.webp') type('image/webp'), url('/assets/tidal-observatory.jpg') type('image/jpeg'));
 }
 
 .canvas-error #scene { display: none; }
