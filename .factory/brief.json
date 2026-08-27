@@ -1,0 +1,12 @@
+{
+  "slug": "wallpage",
+  "title": "Wallpage: a browser 'screensaver' gallery of evolving generative scenes for TVs, second monitors and wall displays",
+  "user": "Developers and design-minded people who miss collectible screensavers and want an ambient, evolving, clock-aware generative display for an idle screen or a TV, without installing anything.",
+  "current_workaround": "Leave a CodePen/Shadertoy tab open, ElectricSheep, Apple aerials, YouTube ambient videos with ads.",
+  "gap": "One URL that cycles a curated set of slow, evolving, seed-based generative scenes with optional clock/date, sleep schedule, and a seed of the day — no install, works on TV browsers and Chromecast.",
+  "smallest_useful_product": "Full-screen page with about 10 original generative scenes, each seeded from date and time; clock overlay; auto-rotate; night dimming; keyboard and remote controls; shareable seed links.",
+  "constraints": "GPU and thermal budget for hours-long runs, OLED burn-in avoidance, TV-browser limits, and original code/assets.",
+  "monetization": "Free core gallery with a one-time Collector unlock for extra scenes; no ads.",
+  "artifact_class": "static-web",
+  "state": "RESEARCHED"
+}

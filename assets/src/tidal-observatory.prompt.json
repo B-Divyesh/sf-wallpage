@@ -1,0 +1,11 @@
+{
+  "asset": "tidal-observatory.png",
+  "use_case": "stylized-concept",
+  "generated_at": "2026-08-27",
+  "generator": "/opt/fleet/lib/gen-image.sh",
+  "deployment": "factory-image",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "A wide cinematic environmental artwork of an impossible nocturnal tidal observatory, seen from a quiet elevated overlook; broad black mineral pools hold delicate luminous current lines, low fog drifts between monolithic basalt forms, and a small distant amber light suggests human scale. Premium atmospheric concept art with subtle film grain and restrained detail, neither photoreal tourism nor fantasy spectacle. 3:2 landscape, deep layered space, central calm negative space, no important details at extreme edges. Moonless blue-green ambient light with one muted ember practical light. Deep kelp, storm teal, moon milk, oxidized copper palette. Wet basalt, fog, dark water, brushed mineral surfaces. Original fictional environment. No people in foreground, no text, no watermark, no logos, no recognizable brands, no UI, no frame, no bright white fields. Avoid neon cyberpunk, generic gradients, fantasy castles, star fields, planets, lens flare, high saturation, busy composition.",
+  "review": "Accepted: coherent fictional environment; palette and composition match the visual thesis; no text, logos, people, seams, or unintended symbols observed."
+}
