@@ -1,5 +1,6 @@
 import './style.css';
 import { defaultSettings, isWithinNightSchedule, readSettings, seedOfDay } from './core';
+import { LICENSE_STORAGE_KEY, type EntitlementReason, verifyEntitlement } from './entitlement';
 import { SceneRenderer, scenes } from './scenes';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -30,12 +31,12 @@ function renderLegal(path: string) {
         <p class="eyebrow">Plain-language policy · 27 August 2026</p>
         <h1>${privacy ? 'A quiet screen should be private.' : 'Simple terms for a quiet gallery.'}</h1>
         ${privacy ? `
-          <h2>What stays on your device</h2><p>Your clock, rotation, dimming, welcome-state, and license preferences are stored in your browser. Your daily seed and generated artwork are computed locally. Wallpage does not create an account, use advertising cookies, fingerprint your device, or include analytics.</p>
-          <h2>When the network is used</h2><p>The gallery works offline after its first visit. If you choose to verify a Collector license, the license key and configured product identifier are sent securely to the Sociobot billing API. Wallpage does not receive payment card details.</p>
+          <h2>What stays on your device</h2><p>Your clock, rotation, dimming, welcome-state, and a pasted Collector license token are stored in your browser. Your daily seed and generated artwork are computed locally. Wallpage does not create an account, use advertising cookies, fingerprint your device, or include analytics.</p>
+          <h2>When the network is used</h2><p>The gallery works offline after its first visit. Collector scenes require a live verification: the license token is sent securely to the configured Sociobot billing verifier and is not treated as an unlock by itself. Wallpage does not receive payment card details.</p>
           <h2>Your control</h2><p>Use “Reset local data” in Settings to remove preferences and any saved license key. Clearing this site’s browser data does the same. Questions can be sent to <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p>
         ` : `
           <h2>Using Wallpage</h2><p>Wallpage is provided as a browser-based ambient display. You may use it personally or in a workplace display. Do not resell the service, interfere with its operation, or represent its generative scenes as your own downloadable collection.</p>
-          <h2>Collector access</h2><p>Collector access is a one-time license sold and verified through Sociobot when checkout is enabled. It unlocks the stated scenes for this browser. Refunds and regional purchase terms shown at checkout apply.</p>
+          <h2>Collector access</h2><p>Collector access is a one-time license sold and verified through Sociobot when checkout is enabled. Paid scenes unlock only after the server confirms an active license; they remain locked while offline, expired, revoked, or unverifiable. Refunds and regional purchase terms shown at checkout apply.</p>
           <h2>Availability</h2><p>The service and its generated visuals are provided “as is.” We may improve or replace individual scene algorithms while preserving access to the core gallery. Wallpage is visual ambience, not a time-critical clock or safety display.</p>
         `}
         <p><a class="text-link" href="/">← Return to the gallery</a></p>
@@ -50,14 +51,15 @@ if (/^\/(privacy|terms)\/?$/.test(location.pathname)) {
   renderGallery();
 }
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined));
-}
-
 function renderGallery() {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let settings = readSettings(window.localStorage);
-  let collectorUnlocked = localStorage.getItem('wallpage:collector') === 'verified';
+  // A writable browser value is never an entitlement. It may retain a license
+  // token for restore, but every app session starts locked until Sociobot says
+  // that token is valid for this product.
+  localStorage.removeItem('wallpage:collector');
+  let collectorUnlocked = false;
+  let collectorReason: EntitlementReason | 'idle' | 'checking' = 'idle';
   let paused = reducedMotion || !settings.seenWelcome;
   let activeIndex = 0;
   let rotationTimer = 0;
@@ -65,6 +67,14 @@ function renderGallery() {
   let lastClockMinute = -1;
 
   const query = new URLSearchParams(location.search);
+  const licenseFromReturn = query.get('license')?.trim();
+  if (licenseFromReturn) {
+    localStorage.setItem(LICENSE_STORAGE_KEY, licenseFromReturn);
+    query.delete('license');
+    const cleanUrl = new URL(location.href);
+    cleanUrl.search = query.toString();
+    history.replaceState({}, '', cleanUrl);
+  }
   const seed = query.get('seed')?.slice(0, 80) || seedOfDay();
   const requestedScene = query.get('scene');
   const requestedIndex = scenes.findIndex((scene) => scene.id === requestedScene);
@@ -131,7 +141,7 @@ function renderGallery() {
         <div class="setting-row"><div><label for="date-toggle">Show date</label><p>Keep the calendar below the clock.</p></div><input id="date-toggle" class="switch" type="checkbox"></div>
         <div class="setting-row"><div><label for="night-dim">Dim at night</label><p>Apply an extra veil during your sleep hours.</p></div><input id="night-dim" class="switch" type="checkbox"></div>
         <div class="time-pair"><label>Dim from <input id="dim-start" type="time"></label><label>Until <input id="dim-end" type="time"></label></div>
-        <section class="collector-panel" aria-labelledby="collector-heading"><p class="eyebrow">Optional</p><h3 id="collector-heading">Collector pass</h3><p id="collector-status">Unlock Fault garden and Aurora basin with a one-time license.</p><div class="license-actions"><a class="secondary-button" id="buy-collector" target="_blank" rel="noreferrer">Get Collector</a><button class="secondary-button" type="button" id="show-license">Enter license</button></div><div class="license-form" id="license-form" hidden><label for="license-key">License key</label><div><input id="license-key" autocomplete="off" spellcheck="false"><button class="primary-button" type="button" id="verify-license">Verify</button></div><p id="license-message" role="status"></p></div></section>
+        <section class="collector-panel" aria-labelledby="collector-heading"><p class="eyebrow">Optional</p><h3 id="collector-heading">Collector pass</h3><p id="collector-status">Unlock Fault garden and Aurora basin with a one-time purchase. The price is shown before checkout; paid scenes stay locked until Sociobot verifies a license.</p><div class="license-actions"><a class="secondary-button" id="buy-collector" target="_blank" rel="noreferrer">Get Collector</a><button class="secondary-button" type="button" id="show-license">Enter license</button></div><div class="license-form" id="license-form" hidden><label for="license-key">License key</label><div><input id="license-key" autocomplete="off" spellcheck="false" aria-describedby="license-message"><button class="primary-button" type="button" id="verify-license">Verify</button></div><p id="license-message" role="status"></p></div></section>
         <button class="text-button danger-button" type="button" id="reset-data">Reset local data</button>
       </form>
     </dialog>
@@ -172,9 +182,23 @@ function renderGallery() {
   function isDialogOpen() { return Boolean(document.querySelector('dialog[open]')); }
 
   function showToast(message: string) {
+    toast.replaceChildren();
     toast.textContent = message;
     toast.classList.add('is-visible');
     window.setTimeout(() => toast.classList.remove('is-visible'), 2800);
+  }
+
+  function showUpdateToast(worker: ServiceWorker, onUpdate: () => void) {
+    toast.replaceChildren();
+    const text = document.createElement('span');
+    text.textContent = 'A new Wallpage release is ready.';
+    const reload = document.createElement('button');
+    reload.type = 'button';
+    reload.className = 'toast-action';
+    reload.textContent = 'Update';
+    reload.addEventListener('click', () => { onUpdate(); worker.postMessage({ type: 'SKIP_WAITING' }); }, { once: true });
+    toast.append(text, reload);
+    toast.classList.add('is-visible');
   }
 
   function availableScenes() { return scenes.filter((scene) => !scene.collector || collectorUnlocked); }
@@ -302,53 +326,71 @@ function renderGallery() {
     const showLicense = document.querySelector<HTMLButtonElement>('#show-license')!;
     const buyUrl = import.meta.env.VITE_SOCIOBOT_BUY_URL;
     if (collectorUnlocked) {
-      status.textContent = 'Collector is active. All ten environments are available.';
+      status.textContent = 'Collector is active for this session. All ten environments are available.';
       buy.hidden = true;
       showLicense.hidden = true;
     } else {
       buy.hidden = !buyUrl;
       if (buyUrl) buy.href = buyUrl;
-      status.textContent = buyUrl ? 'Unlock Fault garden and Aurora basin with a one-time license.' : 'Collector checkout will open after the product is registered. Existing licenses can still be verified.';
+      showLicense.hidden = false;
+      const messages: Record<typeof collectorReason, string> = {
+        idle: buyUrl ? 'Unlock Fault garden and Aurora basin with a one-time license. Paid scenes stay locked until Sociobot verifies it.' : 'Collector checkout is not configured here. An existing license can be checked when a verifier is configured.',
+        checking: 'Checking the saved license with Sociobot. Paid scenes remain locked until it is confirmed.',
+        offline: 'You are offline, so Collector cannot be confirmed. Paid scenes stay locked; reconnect to verify.',
+        expired: 'This license has expired and Collector is no longer active. Paid scenes stay locked.',
+        revoked: 'This license is no longer active. Paid scenes stay locked.',
+        wrong_product: 'This license belongs to a different product. Paid scenes stay locked.',
+        invalid: 'That license could not be verified. Paid scenes stay locked.',
+        error: 'Collector could not be confirmed right now. Paid scenes stay locked; please try again.',
+        unconfigured: 'License verification is not configured on this deployment. Paid scenes stay locked.',
+        ok: 'Collector is awaiting verification.',
+      };
+      status.textContent = messages[collectorReason];
     }
   }
 
-  async function verifyLicense() {
+  async function verifyLicense(license = document.querySelector<HTMLInputElement>('#license-key')!.value.trim()) {
     const keyInput = document.querySelector<HTMLInputElement>('#license-key')!;
     const message = document.querySelector<HTMLElement>('#license-message')!;
     const button = document.querySelector<HTMLButtonElement>('#verify-license')!;
     const endpoint = import.meta.env.VITE_SOCIOBOT_LICENSE_VERIFY_URL;
-    const productId = import.meta.env.VITE_SOCIOBOT_PRODUCT_ID;
-    if (!endpoint || !productId) {
-      message.textContent = 'License verification is not configured on this deployment yet.';
-      return;
-    }
-    if (keyInput.value.trim().length < 6) {
+    if (license.length < 6) {
       message.textContent = 'Enter the license key from your receipt.';
       keyInput.focus();
       return;
     }
     button.disabled = true;
     button.textContent = 'Checking…';
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ license_key: keyInput.value.trim(), product_id: productId }),
-      });
-      const result = await response.json() as { valid?: boolean };
-      if (!response.ok || !result.valid) throw new Error('invalid');
-      localStorage.setItem('wallpage:license', keyInput.value.trim());
-      localStorage.setItem('wallpage:collector', 'verified');
+    collectorUnlocked = false;
+    collectorReason = 'checking';
+    updateCollectorPanel();
+    const verdict = await verifyEntitlement(license, endpoint);
+    collectorReason = verdict.reason;
+    if (verdict.valid) {
+      localStorage.setItem(LICENSE_STORAGE_KEY, license);
       collectorUnlocked = true;
       message.textContent = 'Collector unlocked. Thank you.';
-      updateCollectorPanel();
-      drawSceneGrid();
-    } catch {
-      message.textContent = navigator.onLine ? 'That key could not be verified. Check it and try again.' : 'You are offline. Reconnect to verify this key.';
-    } finally {
-      button.disabled = false;
-      button.textContent = 'Verify';
+      showToast('Collector verified. All ten scenes are available.');
+    } else {
+      // Do not turn an unverified value into a persistent bypass. A previously
+      // saved token is removed only when the server explicitly rejects it.
+      if (['invalid', 'expired', 'revoked', 'wrong_product'].includes(verdict.reason)) localStorage.removeItem(LICENSE_STORAGE_KEY);
+      const messages: Record<EntitlementReason, string> = {
+        ok: 'Collector is active.',
+        invalid: 'That key is not active. Check the license from your receipt.',
+        expired: 'That license has expired and cannot unlock Collector.',
+        revoked: 'That license is no longer active.',
+        wrong_product: 'That license is for a different product.',
+        offline: 'You are offline. Reconnect before Collector can be unlocked.',
+        error: 'The verifier could not confirm this key. Try again shortly.',
+        unconfigured: 'License verification is not configured on this deployment.',
+      };
+      message.textContent = messages[verdict.reason];
     }
+    updateCollectorPanel();
+    drawSceneGrid();
+    button.disabled = false;
+    button.textContent = 'Verify';
   }
 
   document.querySelector('#previous')!.addEventListener('click', () => changeScene(-1));
@@ -397,11 +439,11 @@ function renderGallery() {
   document.querySelector('#dim-start')!.addEventListener('change', (event) => { settings.dimStart = (event.target as HTMLInputElement).value; saveSettings(); });
   document.querySelector('#dim-end')!.addEventListener('change', (event) => { settings.dimEnd = (event.target as HTMLInputElement).value; saveSettings(); });
   document.querySelector('#show-license')!.addEventListener('click', () => { const form = document.querySelector<HTMLElement>('#license-form')!; form.hidden = false; document.querySelector<HTMLInputElement>('#license-key')!.focus(); });
-  document.querySelector('#verify-license')!.addEventListener('click', verifyLicense);
+  document.querySelector('#verify-license')!.addEventListener('click', () => { void verifyLicense(); });
   document.querySelector('#reset-data')!.addEventListener('click', () => {
     if (!confirm('Reset display settings and remove the saved Collector license from this browser?')) return;
-    localStorage.removeItem('wallpage:settings'); localStorage.removeItem('wallpage:license'); localStorage.removeItem('wallpage:collector');
-    settings = { ...defaultSettings, seenWelcome: true }; collectorUnlocked = false; saveSettings(); populateSettings(); drawSceneGrid(); showToast('Local Wallpage data reset');
+    localStorage.removeItem('wallpage:settings'); localStorage.removeItem(LICENSE_STORAGE_KEY); localStorage.removeItem('wallpage:collector');
+    settings = { ...defaultSettings, seenWelcome: true }; collectorUnlocked = false; collectorReason = 'idle'; saveSettings(); populateSettings(); drawSceneGrid(); showToast('Local Wallpage data reset');
   });
 
   document.addEventListener('keydown', (event) => {
@@ -431,7 +473,12 @@ function renderGallery() {
     }
     connection.hidden = online;
   }
-  addEventListener('online', () => { updateConnection(); showToast('Back online'); });
+  addEventListener('online', () => {
+    updateConnection();
+    showToast('Back online');
+    const savedLicense = localStorage.getItem(LICENSE_STORAGE_KEY);
+    if (savedLicense && !collectorUnlocked) void verifyLicense(savedLicense);
+  });
   addEventListener('offline', updateConnection);
   addEventListener('beforeunload', () => renderer?.stop());
 
@@ -444,6 +491,31 @@ function renderGallery() {
   if (!settings.seenWelcome) showModal(welcome);
   else wakeChrome();
   if (reducedMotion) showToast('Animation paused to respect reduced motion.');
+
+  const savedLicense = localStorage.getItem(LICENSE_STORAGE_KEY);
+  if (savedLicense) void verifyLicense(savedLicense);
+  else updateCollectorPanel();
+
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((registration) => {
+        let updateRequested = false;
+        const offerUpdate = (worker: ServiceWorker | null) => {
+          if (worker && navigator.serviceWorker.controller) showUpdateToast(worker, () => { updateRequested = true; });
+        };
+        offerUpdate(registration.waiting);
+        registration.addEventListener('updatefound', () => {
+          const worker = registration.installing;
+          worker?.addEventListener('statechange', () => { if (worker.state === 'installed') offerUpdate(registration.waiting); });
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!updateRequested) return;
+          showToast('Wallpage updated. Reloading…');
+          window.setTimeout(() => location.reload(), 300);
+        });
+      }).catch(() => undefined);
+    }, { once: true });
+  }
 }
 
 function escapeText(value: string): string {
