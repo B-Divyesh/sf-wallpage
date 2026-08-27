@@ -60,6 +60,8 @@ function drawBrackish(ctx: CanvasRenderingContext2D, width: number, height: numb
   }
   ctx.lineWidth = Math.max(0.7, width / 1900);
   ctx.lineCap = 'round';
+  const coolPath = new Path2D();
+  const warmPath = new Path2D();
   for (const particle of state.particles) {
     const angle = Math.sin(particle.y * 0.007 + time * 0.00008 + particle.offset) * 1.2 + Math.cos(particle.x * 0.005 - time * 0.00005);
     const oldX = particle.x;
@@ -73,12 +75,14 @@ function drawBrackish(ctx: CanvasRenderingContext2D, width: number, height: numb
       particle.y = random() * height;
       particle.age = 0;
     }
-    ctx.strokeStyle = `rgba(${particle.age % 3 === 0 ? '237,155,99' : '130,211,197'},${0.14 + Math.sin(particle.age / 350 * Math.PI) * 0.35})`;
-    ctx.beginPath();
-    ctx.moveTo(oldX, oldY);
-    ctx.lineTo(particle.x, particle.y);
-    ctx.stroke();
+    const path = particle.age % 7 === 0 ? warmPath : coolPath;
+    path.moveTo(oldX, oldY);
+    path.lineTo(particle.x, particle.y);
   }
+  ctx.strokeStyle = 'rgba(130,211,197,.31)';
+  ctx.stroke(coolPath);
+  ctx.strokeStyle = 'rgba(237,155,99,.32)';
+  ctx.stroke(warmPath);
 }
 
 function drawMoonTide(ctx: CanvasRenderingContext2D, width: number, height: number, time: number, seed: number) {
@@ -179,19 +183,21 @@ function drawConstellation(ctx: CanvasRenderingContext2D, width: number, height:
     y: random() * height + Math.cos(time * 0.000017 + index * 0.8) * 18,
   }));
   ctx.lineWidth = 0.8;
+  const connections = new Path2D();
   for (let a = 0; a < points.length; a += 1) {
     const point = points[a];
     for (let b = a + 1; b < points.length; b += 1) {
       const other = points[b];
       const distance = Math.hypot(point.x - other.x, point.y - other.y);
       if (distance < Math.min(width, height) * 0.13) {
-        ctx.strokeStyle = `rgba(99,184,177,${(1 - distance / (Math.min(width, height) * 0.13)) * 0.18})`;
-        ctx.beginPath(); ctx.moveTo(point.x, point.y); ctx.lineTo(other.x, other.y); ctx.stroke();
+        connections.moveTo(point.x, point.y); connections.lineTo(other.x, other.y);
       }
     }
     ctx.fillStyle = a % 11 === 0 ? '#ed9b63' : 'rgba(238,245,235,.7)';
     ctx.beginPath(); ctx.arc(point.x, point.y, a % 11 === 0 ? 2 : 1.2, 0, TAU); ctx.fill();
   }
+  ctx.strokeStyle = 'rgba(99,184,177,.12)';
+  ctx.stroke(connections);
 }
 
 function drawKelp(ctx: CanvasRenderingContext2D, width: number, height: number, time: number, seed: number) {

@@ -47,7 +47,7 @@ Copy `.env.example` to `.env.local` and supply the deployment-provided Sociobot 
 
 Wallpage is Vite + vanilla TypeScript. Scene algorithms live in `src/scenes.ts`; local settings and deterministic seed helpers live in `src/core.ts`. A small service worker caches the shell after the first visit. No analytics or tracking calls are made. `/privacy` and `/terms` are application routes with plain-language policies.
 
-The visual thesis and generated-art provenance are in `.factory/design.md` and `assets/src/tidal-observatory.prompt.json`. The high-resolution PNG is retained as source; the shipped WebP is 1200 × 800 and under 300 KB.
+The visual thesis and generated-art provenance are in `.factory/design.md` and `assets/src/tidal-observatory.prompt.json`. The high-resolution PNG is retained as source; the shipped 1200 × 800 AVIF, WebP, and JPEG fallbacks are each under 40 KB.
 
 ## Deployment
 

@@ -58,7 +58,7 @@ function renderGallery() {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let settings = readSettings(window.localStorage);
   let collectorUnlocked = localStorage.getItem('wallpage:collector') === 'verified';
-  let paused = reducedMotion;
+  let paused = reducedMotion || !settings.seenWelcome;
   let activeIndex = 0;
   let rotationTimer = 0;
   let chromeTimer = 0;
@@ -363,7 +363,19 @@ function renderGallery() {
   document.querySelector('#library')!.addEventListener('click', () => { drawSceneGrid(); showModal(libraryDialog); });
   document.querySelector('#settings')!.addEventListener('click', () => { populateSettings(); showModal(settingsDialog); });
   document.querySelector('#open-help')!.addEventListener('click', () => showModal(helpDialog));
-  document.querySelector('#enter-gallery')!.addEventListener('click', () => { settings.seenWelcome = true; saveSettings(); closeModal(welcome); wakeChrome(); });
+  document.querySelector('#enter-gallery')!.addEventListener('click', () => {
+    settings.seenWelcome = true;
+    saveSettings();
+    closeModal(welcome);
+    if (!reducedMotion && paused) {
+      paused = false;
+      renderer?.setPaused(false);
+      const pauseButton = document.querySelector<HTMLButtonElement>('#pause')!;
+      pauseButton.innerHTML = icon('pause');
+      pauseButton.setAttribute('aria-label', 'Pause animation');
+    }
+    wakeChrome();
+  });
 
   document.querySelectorAll<HTMLButtonElement>('.close-dialog').forEach((button) => button.addEventListener('click', () => closeModal(button.closest('dialog')!)));
   [libraryDialog, settingsDialog, helpDialog].forEach((dialog) => dialog.addEventListener('click', (event) => { if (event.target === dialog) closeModal(dialog); }));
@@ -407,9 +419,17 @@ function renderGallery() {
   document.addEventListener('pointermove', wakeChrome, { passive: true });
   document.addEventListener('pointerdown', wakeChrome, { passive: true });
 
-  function updateConnection() {
+  async function updateConnection() {
     const connection = document.querySelector<HTMLElement>('#connection')!;
-    connection.hidden = navigator.onLine;
+    let online = navigator.onLine;
+    if (online) {
+      try {
+        await fetch('/robots.txt', { method: 'HEAD', cache: 'no-store' });
+      } catch {
+        online = false;
+      }
+    }
+    connection.hidden = online;
   }
   addEventListener('online', () => { updateConnection(); showToast('Back online'); });
   addEventListener('offline', updateConnection);

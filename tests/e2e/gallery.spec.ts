@@ -42,3 +42,29 @@ test('390px layout remains operable without horizontal overflow', async ({ brows
   await expect(page.getByLabel('Auto-rotate')).toBeVisible();
   await page.close();
 });
+
+test('reduced-motion visitors start paused and can opt in', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
+  await page.goto('/');
+  const play = page.getByRole('button', { name: 'Play animation' });
+  await expect(play).toBeVisible();
+  await play.click();
+  await expect(page.getByRole('button', { name: 'Pause animation' })).toBeVisible();
+  await context.close();
+});
+
+test('installed shell reopens offline', async ({ browser }) => {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
+  await page.goto('/');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Brackish drift' })).toBeVisible();
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByText(/Offline · the gallery will keep playing/)).toBeVisible();
+  await context.close();
+});
