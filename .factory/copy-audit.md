@@ -64,7 +64,7 @@ Read-aloud check: “Turn an idle screen into moving art for TVs, wall displays,
 | Paid scenes stay locked until Sociobot verifies the license. | 9 | Pass; `collector-license` |
 | Each moving scene is drawn in this browser. | 8 | Pass; `local-rendering` |
 | The gallery uses no video stream, account, or ads. | 9 | Pass; `local-rendering`, `privacy-no-tracking` |
-| This release is tested in Chromium at 1280 by 720 with keyboard controls. | 12 | Pass; `tv-display-support` |
+| This release is tested in Chromium at 1280 by 720 with keyboard controls. | 13 | Pass; `tv-display-support` |
 | To cast, use your browser or device menu. | 8 | Pass; support boundary |
 | Casting is not controlled by Wallpage. | 6 | Pass; scope statement |
 | The gallery still works when fullscreen is unavailable. | 8 | Pass; `tv-display-support` |
