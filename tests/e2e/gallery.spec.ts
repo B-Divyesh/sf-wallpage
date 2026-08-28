@@ -53,7 +53,7 @@ test('every route uses the shared navigation, footer, and canonical URL', async 
     await expect(page.getByRole('link', { name: 'Wallpage home' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
     await expect(page.getByText('Wallpage turns idle displays into moving art.')).toBeAttached();
-    await expect(page.getByText(/Built by Param Factory · v1\.2\.0 · build [0-9a-f]{7}/)).toBeAttached();
+    await expect(page.getByText(/Built by Param Factory · v1\.2\.1 · build [0-9a-f]{7}/)).toBeAttached();
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://wallpage.sociobot.in${route === '/' ? '/' : route}`);
   }
 });

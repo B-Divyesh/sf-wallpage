@@ -56,7 +56,7 @@ Visible demo controls have touch targets at least 44 by 44 CSS pixels at 390px w
 
 ## Display support
 
-Wallpage supports current Chrome, Edge, Firefox, and Safari browsers with Canvas 2D. It is tested at a 1280 by 720 TV-like viewport with keyboard-only controls. The gallery remains usable when fullscreen or Screen Wake Lock is unavailable.
+Wallpage is tested in Chromium at a 1280 by 720 TV-like viewport with keyboard-only controls. The gallery remains usable when fullscreen or Screen Wake Lock is unavailable.
 
 Casting comes from your browser or device menu. Wallpage does not control or promise support for a specific casting device.
 

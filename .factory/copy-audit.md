@@ -64,7 +64,7 @@ Read-aloud check: “Turn an idle screen into moving art for TVs, wall displays,
 | Paid scenes stay locked until Sociobot verifies the license. | 9 | Pass; `collector-license` |
 | Each moving scene is drawn in this browser. | 8 | Pass; `local-rendering` |
 | The gallery uses no video stream, account, or ads. | 9 | Pass; `local-rendering`, `privacy-no-tracking` |
-| Use a current Chrome, Edge, Firefox, or Safari browser with Canvas 2D. | 12 | Pass; `tv-display-support` |
+| This release is tested in Chromium at 1280 by 720 with keyboard controls. | 12 | Pass; `tv-display-support` |
 | To cast, use your browser or device menu. | 8 | Pass; support boundary |
 | Casting is not controlled by Wallpage. | 6 | Pass; scope statement |
 | The gallery still works when fullscreen is unavailable. | 8 | Pass; `tv-display-support` |
@@ -74,7 +74,7 @@ Scene descriptions use 6–11 words. Status and error sentences use 3–17 words
 
 ## README
 
-README visitor claims map to `demo-sandbox`, `local-rendering`, `privacy-no-tracking`, `collector-network`, `offline-reload`, `scene-count`, `collector-license`, `display-settings`, `share-scene`, `fullscreen`, `controls-fade`, `keyboard-controls`, `tv-display-support`, `wake-lock`, `touch-targets`, `asset-budgets`, and `build-output`. Its sentences use 3–22 words. Contributor commands and architecture statements describe repository mechanics.
+README visitor claims map to `demo-sandbox`, `local-rendering`, `privacy-no-tracking`, `collector-network`, `offline-reload`, `scene-count`, `collector-license`, `display-settings`, `share-scene`, `fullscreen`, `controls-fade`, `keyboard-controls`, `tv-display-support`, `wake-lock`, `touch-targets`, `asset-budgets`, and `build-output`. Browser support is limited to the tested Chromium boundary. Its sentences use 3–22 words. Contributor commands and architecture statements describe repository mechanics.
 
 ## Terminology
 

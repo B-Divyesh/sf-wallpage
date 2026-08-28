@@ -5,7 +5,7 @@ import { scenes } from './scene-catalog';
 import type { SceneRenderer } from './scenes';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
-const BUILD_LABEL = `v1.2.0 · build ${__WALLPAGE_BUILD__}`;
+const BUILD_LABEL = `v1.2.1 · build ${__WALLPAGE_BUILD__}`;
 const DEMO_SETTINGS_KEY = 'demo:wallpage:settings';
 const DEMO_SEED = 'sample-moon-tide-2042';
 const SITE_ORIGIN = 'https://wallpage.sociobot.in';
@@ -244,7 +244,7 @@ function renderGallery(demoMode = false) {
 
     <dialog id="help-dialog" class="panel-dialog help-dialog" aria-labelledby="help-title">
       <div class="dialog-heading"><div><p class="eyebrow">Wallpage guide</p><h2 id="help-title">Use Wallpage on a larger screen</h2></div><button class="icon-button close-dialog" aria-label="Close guide">${icon('close')}</button></div>
-      <div class="help-layout"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="The fictional tidal observatory artwork made for Wallpage" decoding="async" loading="lazy"></picture><div><p>Each moving scene is drawn in this browser. The gallery uses no video stream, account, or ads.</p><h3>Put it on a larger screen</h3><ol><li>Use a current Chrome, Edge, Firefox, or Safari browser with Canvas 2D.</li><li>To cast, use your browser or device menu. Casting is not controlled by Wallpage.</li><li>Press <kbd>F</kbd> or the expand button for fullscreen. The gallery still works when fullscreen is unavailable.</li><li>Move the pointer away. The controls fade after 4.5 seconds.</li></ol><h3>Show it on an idle display</h3><p>Keep this browser tab open on a TV, wall display, or second monitor. Turn on Keep screen awake when the device supports it.</p><h3>Keyboard and remote controls</h3><p><kbd>←</kbd>/<kbd>J</kbd> previous · <kbd>→</kbd>/<kbd>K</kbd> next · <kbd>Space</kbd> pause · <kbd>C</kbd> clock · <kbd>F</kbd> fullscreen · <kbd>S</kbd> settings · <kbd>H</kbd> guide.</p></div></div>
+      <div class="help-layout"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="The fictional tidal observatory artwork made for Wallpage" decoding="async" loading="lazy"></picture><div><p>Each moving scene is drawn in this browser. The gallery uses no video stream, account, or ads.</p><h3>Put it on a larger screen</h3><ol><li>This release is tested in Chromium at 1280 by 720 with keyboard controls.</li><li>To cast, use your browser or device menu. Casting is not controlled by Wallpage.</li><li>Press <kbd>F</kbd> or the expand button for fullscreen. The gallery still works when fullscreen is unavailable.</li><li>Move the pointer away. The controls fade after 4.5 seconds.</li></ol><h3>Show it on an idle display</h3><p>Keep this browser tab open on a TV, wall display, or second monitor. Turn on Keep screen awake when the device supports it.</p><h3>Keyboard and remote controls</h3><p><kbd>←</kbd>/<kbd>J</kbd> previous · <kbd>→</kbd>/<kbd>K</kbd> next · <kbd>Space</kbd> pause · <kbd>C</kbd> clock · <kbd>F</kbd> fullscreen · <kbd>S</kbd> settings · <kbd>H</kbd> guide.</p></div></div>
     </dialog>`;
 
   const canvas = document.querySelector<HTMLCanvasElement>('#scene')!;

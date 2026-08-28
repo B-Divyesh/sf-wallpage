@@ -85,10 +85,10 @@
   },
   {
     "id": "tv-display-support",
-    "claim": "At 1280 by 720, the gallery works with keyboard-only controls and remains usable without fullscreen.",
+    "claim": "In Chromium at 1280 by 720, the gallery works with keyboard-only controls and remains usable without fullscreen.",
     "where": "landing, guide, README",
     "test": "npm run test:claims -- --grep @claim:tv-display-support",
-    "sandbox": "fresh 1280 by 720 demo context; use only keyboard input, reject fullscreen, and assert the scene and recovery message remain usable"
+    "sandbox": "fresh Chromium 1280 by 720 demo context; assert the browser family, use only keyboard input, reject fullscreen, and verify the scene and recovery message"
   },
   {
     "id": "wake-lock",

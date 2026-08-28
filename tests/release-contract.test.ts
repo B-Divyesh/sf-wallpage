@@ -24,6 +24,16 @@ describe('release contract', () => {
     expect(copy).toMatch(/^(Turn|Create|Show|Display|Run|Watch)\b/);
   });
 
+  test('browser support copy stays within the tested Chromium boundary', async () => {
+    const readme = await readFile(resolve(root, 'README.md'), 'utf8');
+    const app = await readFile(resolve(root, 'src/main.ts'), 'utf8');
+    expect(readme).toContain('Wallpage is tested in Chromium at a 1280 by 720 TV-like viewport with keyboard-only controls.');
+    expect(app).toContain('This release is tested in Chromium at 1280 by 720 with keyboard controls.');
+    for (const unsupportedClaim of ['supports current Chrome', 'Edge, Firefox', 'Safari browser with Canvas 2D']) {
+      expect(`${readme}\n${app}`).not.toContain(unsupportedClaim);
+    }
+  });
+
   test('static host serves known routes and returns its designed 404 for unknown routes', async () => {
     const config = JSON.parse(await readFile(resolve(root, 'public/staticwebapp.config.json'), 'utf8')) as { routes: Array<{ route: string; rewrite?: string }>; responseOverrides?: Record<string, { rewrite?: string }> };
     for (const route of ['/', '/demo', '/gallery', '/privacy', '/terms']) {

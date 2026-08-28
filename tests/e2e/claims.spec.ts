@@ -255,10 +255,11 @@ test('@claim:keyboard-controls changes scenes, playback, clock, settings, and gu
   await expect(page.getByRole('dialog', { name: 'Use Wallpage on a larger screen' })).toBeVisible();
 });
 
-test('@claim:tv-display-support works by keyboard at a TV-like size without fullscreen', async ({ browser }) => {
+test('@claim:tv-display-support works in Chromium by keyboard at a TV-like size without fullscreen', async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   await page.addInitScript(() => Object.defineProperty(Element.prototype, 'requestFullscreen', { configurable: true, value: async () => { throw new Error('unsupported'); } }));
   await page.goto('/demo');
+  expect(await page.evaluate(() => navigator.userAgent)).toMatch(/(?:Headless)?Chrome\//);
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('heading', { name: 'Quiet duel' })).toBeVisible();
   await page.keyboard.press('Space');
