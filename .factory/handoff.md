@@ -1,27 +1,23 @@
-# Wallpage verification handoff — 2026-08-27
+# Wallpage review handoff — 2026-08-28
 
-## Release outcome: PASS
+## Outcome
 
-Candidate `0659a2d784e1f17f96db58ada336c8b2153fc219` is verified and deployed at <https://wallpage.sociobot.in/>. Freshly built candidate assets and production are identical for the shell, startup JS, CSS, deferred scene renderer, and service worker. No release-blocking defects were found.
+Completed the requested adversarial first-read review without modifying product code. The review is **FAIL** and is recorded in `.factory/review-1.md`.
 
-## How verified
+## Work completed
 
-From a clean checkout: `npm ci`, `npm test` (12/12), `npx playwright install chromium`, `npm run test:e2e` (10/10), `npm run build`, and `npm run check:budget` all passed. The exact build emits `dist/` and enforces 30,133 B initial JS (10,550 B gzip), 14,589 B CSS (4,130 B gzip), 8,079 B deferred scene JS, and a 21,591 B AVIF poster.
+- Opened live production cold in fresh 390 px and desktop browser contexts.
+- Audited landing and README copy, demo entry points/storage behavior, claims artifacts, metadata/routes/links, offline behavior, and visual identity.
+- Used a fresh clone at `df2db712216c8343c6fa51ec411f00fecabc4bf7` for local verification.
+- Ran `npm ci`, `npm test` (12/12), `npm run build`, Playwright Chromium installation, and `npm run test:e2e` (10/10) in that clone.
 
-Local and live desktop/mobile browser QA covered the welcome flow, scenes, seed sharing, keyboard controls, pause, clock, settings, rotation/dimming boundary values, invalid-license recovery, Collector lockout, responsive controls, focus, reduced motion, offline reload, service-worker update, console/page errors, and axe. No serious/critical axe findings or normal-flow errors occurred. Local Lighthouse mobile scored 97 performance, 100 accessibility, 100 best practices, and 100 SEO (LCP 1.51 s, CLS 0).
+## Outstanding blockers
 
-Production has correct CSP/HSTS/referrer/nosniff/permissions headers and cache policy: 30-second revalidation for shell/manifest, immutable hashed assets, and `no-cache` service worker. Normal loads made no third-party network requests or analytics calls. The privacy and terms routes work.
+1. The first screen does not identify its audience or explain its job in plain language.
+2. `/demo` and `?demo=1` are ordinary gallery routes and write normal `wallpage:settings`; no isolated sample demo, banner, reset, or documentation exists.
+3. `.factory/claims.json` and tagged claim tests are absent while the site and README make numerous unlisted claims.
+4. Unknown URLs return the ordinary gallery with HTTP 200 instead of a designed 404.
 
-## Reproduce
+## How to verify
 
-```sh
-npm ci
-npm test
-npx playwright install chromium
-npm run test:e2e
-npm run build
-npm run check:budget
-npm run preview
-```
-
-See `.factory/verification-4.md` for the full evidence, asset SHA-256 deployment comparison, tested cases, policies, and scope note. The only unavailable real-world action was completing a genuine paid purchase without a purchaser license; deterministic integration tests cover valid, invalid, expired, offline, and tampered entitlement outcomes.
+Read `.factory/review-1.md`. The acceptance-retest section gives the required post-fix browser and clean-clone checks.
