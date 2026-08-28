@@ -157,7 +157,10 @@ function renderGallery(demoMode = false) {
     history.replaceState({}, '', cleanUrl);
   }
   const seed = demoMode ? DEMO_SEED : query.get('seed')?.slice(0, 80) || seedOfDay();
-  const requestedScene = demoMode ? query.get('scene') || 'moon-tide' : query.get('scene');
+  // The public demo URL always starts from the documented Moon tide sample.
+  // A shared or stale `scene` query must not turn that isolated sample into
+  // an arbitrary visitor state.
+  const requestedScene = demoMode ? 'moon-tide' : query.get('scene');
   const requestedIndex = scenes.findIndex((scene) => scene.id === requestedScene);
   if (requestedIndex >= 0 && (!scenes[requestedIndex].collector || collectorUnlocked)) activeIndex = requestedIndex;
 
@@ -191,7 +194,7 @@ function renderGallery(demoMode = false) {
         <button id="fullscreen" class="icon-button" aria-label="Enter fullscreen">${icon('expand')}</button>
         <button id="settings" class="icon-button" aria-label="Open settings">${icon('settings')}</button>
       </nav>
-      <footer class="corner-footer chrome"><span>This scene runs in your browser.</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>Param Factory · ${BUILD_LABEL}</span></footer>
+      <footer class="corner-footer chrome"><span>This scene runs in your browser.</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>Built by Param Factory · ${BUILD_LABEL}</span></footer>
       ${demoMode ? '<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><button type="button" id="reset-demo">Reset demo</button><a href="/?gallery=1" id="start-real">Start for real</a></aside>' : ''}
       <div class="connection" id="connection" role="status" hidden>Offline · the gallery keeps playing</div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -206,7 +209,6 @@ function renderGallery(demoMode = false) {
         <p>For TVs, wall displays, and second monitors that need a calm display.</p>
         <ul><li><kbd>←</kbd> <kbd>→</kbd> change scene</li><li><kbd>Space</kbd> pause</li><li><kbd>C</kbd> clock</li><li><kbd>F</kbd> fullscreen</li></ul>
         <button id="enter-gallery" class="primary-button">Open today’s gallery <span aria-hidden="true">→</span></button>
-        <p class="generated-note">The still artwork was generated for Wallpage. Provenance is in the project design notes.</p>
       </div>
     </dialog>
 

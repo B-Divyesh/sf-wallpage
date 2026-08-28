@@ -22,13 +22,21 @@ test('@claim:demo-sandbox opens and resets an isolated fixed sample', async ({ p
   await expect(page).toHaveURL(/\?gallery=1(?:&|$)/);
   expect(await page.evaluate(() => Object.keys(localStorage).sort())).toEqual(['wallpage:settings']);
   expect(await page.evaluate(() => localStorage.getItem('wallpage:settings'))).toBe(JSON.stringify({ clock: false, seenWelcome: true }));
+
+  await page.goto('/demo?scene=cloud-chamber');
+  await expect(page.getByRole('heading', { name: 'Moon tide' })).toBeVisible();
+  await expect(page.getByText('Sample scene setting · sample-moon-tide-2042')).toBeVisible();
 });
 
-test('@claim:local-rendering draws a scene without a media stream', async ({ page }) => {
+test('@claim:local-rendering draws every free scene without a media stream', async ({ page }) => {
   const mediaRequests: string[] = [];
   page.on('request', (request) => { if (request.resourceType() === 'media') mediaRequests.push(request.url()); });
   await page.goto('/?demo=1');
   await expect.poll(() => page.locator('#scene').evaluate((canvas: HTMLCanvasElement) => canvas.width * canvas.height)).toBeGreaterThan(0);
+  for (const title of ['Quiet duel', 'Cloud chamber', 'Ember bloom', 'Salt constellation', 'Kelp current', 'Rain archive']) {
+    await page.getByRole('button', { name: 'Next scene' }).click();
+    await expect(page.getByRole('heading', { name: title })).toBeVisible();
+  }
   await expect(page.locator('video, iframe')).toHaveCount(0);
   expect(mediaRequests).toEqual([]);
 });
