@@ -58,6 +58,8 @@ Prompt (use case `stylized-concept`):
 
 Generation provenance: generated for Wallpage on 2026-08-27 using the Param Factory Azure image generation deployment via `/opt/fleet/lib/gen-image.sh`. The selected output is project-original; no third-party or copyrighted source imagery is used. Source prompt and generation metadata live beside the source asset in `assets/src/`.
 
+The 1200 × 630 social preview and 180 × 180 touch icon are deterministic crops of that selected original on 2026-08-28. No additional source artwork or third-party asset was introduced.
+
 ## Accessibility and fallback states
 
 Canvas visuals are decorative and described by adjacent accessible scene title/description text. Keyboard focus uses a 3 px ember ring plus offset. Status changes are announced politely. Offline operation uses the cached app shell and scenes; the poster is the loading/offline fallback if canvas setup fails. Error copy explains that a lower-motion still mode is available. Contrast is evaluated against the darkest panel treatment, not the shifting canvas.

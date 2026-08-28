@@ -1,0 +1,72 @@
+[
+  {
+    "id": "demo-sandbox",
+    "claim": "The sample opens with a fixed Moon tide scene and never changes normal Wallpage data.",
+    "where": "landing action, demo banner, README",
+    "test": "npm run test:claims -- --grep @claim:demo-sandbox",
+    "sandbox": "fresh browser context; seed normal settings, enter from the landing page, change and reset demo settings, start for real, and compare namespaces"
+  },
+  {
+    "id": "local-rendering",
+    "claim": "Each moving scene is drawn in the browser without a video stream.",
+    "where": "gallery footer, guide, README",
+    "test": "npm run test:claims -- --grep @claim:local-rendering",
+    "sandbox": "fresh demo context; require a sized canvas and assert there are no video, iframe, or media requests"
+  },
+  {
+    "id": "privacy-no-tracking",
+    "claim": "The gallery has no account, ads, analytics, external fonts, or cross-origin demo traffic.",
+    "where": "landing facts, privacy page, README",
+    "test": "npm run test:claims -- --grep @claim:privacy-no-tracking",
+    "sandbox": "fresh demo context; intercept the complete sample flow, require same-origin requests, no cookies or account fields, and demo-prefixed storage only"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "The demo reopens offline after the first visit.",
+    "where": "README and offline status",
+    "test": "npm run test:claims -- --grep @claim:offline-reload",
+    "sandbox": "fresh demo context; wait for service worker control, reload online, set offline, reload, and require the Moon tide sample"
+  },
+  {
+    "id": "scene-count",
+    "claim": "The gallery contains eight free scenes and two Collector scenes.",
+    "where": "landing facts, gallery, README",
+    "test": "npm run test:claims -- --grep @claim:scene-count",
+    "sandbox": "fresh demo context; open the scene library and count free and locked cards"
+  },
+  {
+    "id": "collector-license",
+    "claim": "Collector costs $19 once and its two scenes unlock only after Sociobot verifies a license.",
+    "where": "landing, settings, terms, README",
+    "test": "npm run test:claims -- --grep @claim:collector-license",
+    "sandbox": "start in demo; verify two locked scenes, leave demo, assert price and external Sociobot checkout with no embedded provider, then exercise invalid, offline, and valid verifier outcomes"
+  },
+  {
+    "id": "controls-fade",
+    "claim": "Gallery controls fade after 4.5 seconds and return on pointer movement.",
+    "where": "guide, README",
+    "test": "npm run test:claims -- --grep @claim:controls-fade",
+    "sandbox": "fresh demo context; time the visible-to-hidden state and restore it with pointer movement"
+  },
+  {
+    "id": "keyboard-controls",
+    "claim": "Keyboard shortcuts change scenes, pause playback, toggle the clock, and open settings and the guide.",
+    "where": "gallery guide, README",
+    "test": "npm run test:claims -- --grep @claim:keyboard-controls",
+    "sandbox": "fresh demo context; exercise ArrowRight, Space, C, S, Escape, and H and assert each resulting state"
+  },
+  {
+    "id": "touch-targets",
+    "claim": "Visible demo controls have touch targets at least 44 by 44 CSS pixels at 390px width.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:touch-targets",
+    "sandbox": "fresh 390 by 844 demo context; measure every visible button and link"
+  },
+  {
+    "id": "asset-budgets",
+    "claim": "Initial JavaScript is at most 200 KB, CSS files are at most 50 KB, and shipped scene images are at most 300 KB each.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:asset-budgets",
+    "sandbox": "fresh production build; measure emitted initial JavaScript, CSS, AVIF, WebP, and JPEG files"
+  }
+]

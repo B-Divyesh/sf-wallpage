@@ -1,59 +1,74 @@
 # Wallpage
 
-Wallpage is a browser “screensaver” gallery for idle TVs, wall displays, and second monitors. It draws slow, original, deterministic environments locally in Canvas—no video stream, ads, account, external font, or installation.
+Turn an idle screen into moving art.
 
-The free collection includes eight scenes, a movable clock/date overlay, deterministic seed-of-the-day, shareable seed links, auto-rotation, fullscreen, adaptive frame rates, hidden-tab pausing, and night dimming. Two additional scenes are ready for the optional one-time Collector pass.
+Wallpage is for TVs, wall displays, and second monitors that need a calm display. Each moving scene is drawn in the browser without a video stream.
 
-Live product: [wallpage.sociobot.in](https://wallpage.sociobot.in)
+[Try Wallpage with sample data](https://wallpage.sociobot.in/?demo=1). The fixed Moon tide sample uses separate `demo:` storage and can be reset at any time.
+
+The gallery has eight free scenes. Collector adds two scenes for $19 once. Those scenes unlock only after Sociobot verifies a license.
+
+Wallpage has no account, ads, analytics, external fonts, or cross-origin demo traffic. The demo reopens offline after its first visit.
 
 ## Run locally
 
-Requirements: Node.js 20 or newer.
+Use Node.js 20 or newer.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Vite prints the local URL. Open it in a modern browser; no environment variables are required for the free gallery.
+The command prints a local URL. Open `/?demo=1` for the isolated sample.
 
 ## Test and build
 
 ```sh
 npm test
-npm run build
+npm run test:claims
+npm run test:e2e
 npm run check:budget
+npm run build
 npm run preview
 ```
 
-The production command is exactly `npm run build`. It type-checks the app and writes the static deploy to `dist/`, with `dist/index.html` at the root. Azure Static Web Apps reads `staticwebapp.config.json` from that output.
-`npm run check:budget` rebuilds and enforces the static product limits for initial JavaScript (200 KB), CSS (50 KB), poster formats (300 KB each), and WOFF2 fonts (120 KB each).
+`npm run build` type-checks the app and writes the static site to `dist/`. The deploy artifact keeps `index.html` at the root.
+
+The budget check caps initial JavaScript at 200 KB. It caps CSS files at 50 KB and scene images at 300 KB each.
 
 ## Controls
 
-- `←` / `J`: previous scene
-- `→` / `K`: next scene
+- `←` or `J`: previous scene
+- `→` or `K`: next scene
 - `Space`: pause or play
 - `C`: show or hide the clock
 - `F`: enter or leave fullscreen
-- `S`: open settings
+- `S`: open display settings
 - `H`: open the guide
 
-All actions also have 44 px pointer/remote-friendly buttons. Controls fade during playback and return on pointer movement or any key press.
+These keyboard shortcuts change scenes, playback, the clock, settings, and the guide. Gallery controls fade after 4.5 seconds and return on pointer movement.
 
-## Collector billing
+Visible demo controls have touch targets at least 44 by 44 CSS pixels at 390px width.
 
-Copy `.env.example` to `.env.local` for a local Collector configuration. Production uses the committed, public-only `.env.production` URLs for the registered Wallpage Sociobot checkout and verifier. The browser calls `GET <verifier>?license=<token>` only to verify a restored or pasted license. A local token or old local-storage flag never unlocks Collector: each session requires an active server verdict, and paid scenes remain locked offline or on an error. Payment providers are never embedded directly and Vite variables must never contain secrets.
+## Collector purchase and restore
+
+Copy `.env.example` to `.env.local` to test another public Sociobot configuration. Production uses the committed checkout and verifier URLs in `.env.production`.
+
+The browser sends a restored license only to the Sociobot verifier. A saved browser value cannot unlock Collector without a current positive response.
+
+Payment happens on the Sociobot checkout. Wallpage does not embed a payment provider.
 
 ## Architecture and privacy
 
-Wallpage is Vite + vanilla TypeScript. The compact scene catalog lives in `src/scene-catalog.ts`; Canvas algorithms load from `src/scenes.ts` after gallery entry or during a returning visitor’s idle time. Local settings and deterministic seed helpers live in `src/core.ts`. The build stamps the service-worker cache and manifest start URL from the emitted shell fingerprint, so each release installs as a distinct worker; navigation is network-first with an offline shell fallback. No analytics or tracking calls are made. `/privacy` and `/terms` are application routes with plain-language policies.
+Wallpage uses Vite and vanilla TypeScript. The browser test suite proves offline reload through the isolated sample.
 
-The visual thesis and generated-art provenance are in `.factory/design.md` and `assets/src/tidal-observatory.prompt.json`. The high-resolution PNG is retained as source; the shipped 1200 × 800 AVIF, WebP, and JPEG fallbacks are each under 40 KB.
+Read the [privacy policy](https://wallpage.sociobot.in/privacy) and [terms](https://wallpage.sociobot.in/terms). Demo behavior is documented in [.factory/demo.md](.factory/demo.md).
+
+The visual thesis and generated-art provenance are in [.factory/design.md](.factory/design.md). Social and touch images are crops of the same project artwork.
 
 ## Deployment
 
-Deploy the contents of `dist/` as an Azure Static Web App. The repository does not manage infrastructure, DNS, secrets, billing registration, or production deployment.
+Deploy `dist/` as the configured Azure Static Web App. The repository does not manage infrastructure, DNS, secrets, or billing registration.
 
 ## License
 

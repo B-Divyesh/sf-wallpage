@@ -1,23 +1,39 @@
-# Wallpage review handoff — 2026-08-28
+# Wallpage repair handoff — 2026-08-28
 
 ## Outcome
 
-Completed the requested adversarial first-read review without modifying product code. The review is **FAIL** and is recorded in `.factory/review-1.md`.
+Repaired every BLOCKING finding in `.factory/review-1.md` while preserving Wallpage's cinematic projection-room identity and Azure Static Web App output.
 
-## Work completed
+## What changed
 
-- Opened live production cold in fresh 390 px and desktop browser contexts.
-- Audited landing and README copy, demo entry points/storage behavior, claims artifacts, metadata/routes/links, offline behavior, and visual identity.
-- Used a fresh clone at `df2db712216c8343c6fa51ec411f00fecabc4bf7` for local verification.
-- Ran `npm ci`, `npm test` (12/12), `npm run build`, Playwright Chromium installation, and `npm run test:e2e` (10/10) in that clone.
+- Replaced the first screen with the plain job, audience, sample action, and three tested facts.
+- Added isolated `?demo=1` and `/demo` entry points. The fixed Moon tide sample stores only `demo:` data; reset and leaving demo clear the entire namespace.
+- Added the persistent demo banner, reset/start-for-real actions, `.factory/demo.md`, `.factory/claims.json`, and one tagged Playwright test for each claim.
+- Added route-aware metadata, canonical/OG/Twitter metadata, social and touch artwork, header/footer/legal links, focus/live route feedback, and a styled HTTP-404 response page.
+- Completed narrow-phone layouts, reduced-motion behavior, touch-target checks, and axe coverage without replacing the dark cinematic visual system.
 
-## Outstanding blockers
+## Verification before clean-clone retest
 
-1. The first screen does not identify its audience or explain its job in plain language.
-2. `/demo` and `?demo=1` are ordinary gallery routes and write normal `wallpage:settings`; no isolated sample demo, banner, reset, or documentation exists.
-3. `.factory/claims.json` and tagged claim tests are absent while the site and README make numerous unlisted claims.
-4. Unknown URLs return the ordinary gallery with HTTP 200 instead of a designed 404.
+- `npm test` — 16 passing tests.
+- `npm run test:claims` — 10 passing tagged claim tests.
+- `npm run test:e2e` — 22 passing browser/accessibility/mobile/offline tests.
+- `npm run check:budget` — pass: initial JavaScript 36,642 B; CSS and all scene posters within configured limits.
+- `npm run build` — pass; `dist/index.html` is present at the output root.
+- Axe serious/critical violations are asserted as zero across landing, demo, legal, and recovery routes in the browser suite.
 
-## How to verify
+## How to run
 
-Read `.factory/review-1.md`. The acceptance-retest section gives the required post-fix browser and clean-clone checks.
+```sh
+npm ci
+npm test
+npm run test:claims
+npm run test:e2e
+npm run check:budget
+npm run build
+```
+
+Use `/?demo=1` for the isolated sample. Deployment is the committed `dist/` static artifact through the Azure Static Web App configuration in `public/staticwebapp.config.json`.
+
+## Known gaps
+
+None. A clean-clone retest and deployment push are recorded in the final amended handoff commit.

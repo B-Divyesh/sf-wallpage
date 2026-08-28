@@ -41,4 +41,11 @@ describe('saved settings', () => {
   it('falls back when saved data is corrupt', () => {
     expect(readSettings({ getItem: () => '{nope' })).toEqual(defaultSettings);
   });
+
+  it('reads an explicit isolated storage key', () => {
+    let requestedKey = '';
+    const storage = { getItem: (key: string) => { requestedKey = key; return JSON.stringify({ clock: false }); } };
+    expect(readSettings(storage, 'demo:wallpage:settings').clock).toBe(false);
+    expect(requestedKey).toBe('demo:wallpage:settings');
+  });
 });

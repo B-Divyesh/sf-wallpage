@@ -62,10 +62,10 @@ export function isWithinNightSchedule(now: Date, start: string, end: string): bo
   return from < to ? current >= from && current < to : current >= from || current < to;
 }
 
-export function readSettings(storage: Pick<Storage, 'getItem'> | null): StoredSettings {
+export function readSettings(storage: Pick<Storage, 'getItem'> | null, key = 'wallpage:settings'): StoredSettings {
   if (!storage) return { ...defaultSettings };
   try {
-    const saved = JSON.parse(storage.getItem('wallpage:settings') ?? '{}') as Partial<StoredSettings>;
+    const saved = JSON.parse(storage.getItem(key) ?? '{}') as Partial<StoredSettings>;
     return { ...defaultSettings, ...saved };
   } catch {
     return { ...defaultSettings };

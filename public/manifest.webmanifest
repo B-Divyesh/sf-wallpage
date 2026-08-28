@@ -1,10 +1,13 @@
 {
   "name": "Wallpage",
   "short_name": "Wallpage",
-  "description": "Ambient generative scenes for idle screens.",
-  "start_url": "/",
+  "description": "Moving browser art for TVs, wall displays, and second monitors.",
+  "start_url": "/?gallery=1",
   "display": "fullscreen",
   "background_color": "#07100f",
   "theme_color": "#07100f",
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
 }

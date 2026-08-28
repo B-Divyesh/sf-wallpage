@@ -5,6 +5,47 @@ import { scenes } from './scene-catalog';
 import type { SceneRenderer } from './scenes';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+const BUILD_LABEL = 'v1.1.0 · repair 1';
+const DEMO_SETTINGS_KEY = 'demo:wallpage:settings';
+const DEMO_SEED = 'sample-moon-tide-2042';
+const SITE_ORIGIN = 'https://wallpage.sociobot.in';
+
+function clearDemoData() {
+  // Demo state has its own namespace. Remove every key in that namespace so
+  // changing the sample never follows a visitor into their real gallery.
+  Object.keys(localStorage).filter((key) => key.startsWith('demo:')).forEach((key) => localStorage.removeItem(key));
+}
+
+function setMetadata(title: string, description: string, canonical: string) {
+  document.title = title;
+  const values: Record<string, string> = {
+    'meta[name="description"]': description,
+    'meta[property="og:title"]': title,
+    'meta[property="og:description"]': description,
+    'meta[name="twitter:title"]': title,
+    'meta[name="twitter:description"]': description,
+  };
+  Object.entries(values).forEach(([selector, value]) => document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', value));
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', `${SITE_ORIGIN}${canonical}`);
+  document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.setAttribute('content', `${SITE_ORIGIN}${canonical}`);
+}
+
+function routeFocus() {
+  requestAnimationFrame(() => {
+    const heading = document.querySelector<HTMLElement>('main h1');
+    heading?.focus({ preventScroll: true });
+    const status = document.querySelector<HTMLElement>('#route-status');
+    if (status && heading) status.textContent = heading.textContent ?? '';
+  });
+}
+
+function siteHeader() {
+  return `<header class="site-header"><a class="wordmark" href="/" aria-label="Wallpage home"><span></span>Wallpage</a><nav aria-label="Main navigation"><a href="/?demo=1">Demo</a><a href="/?gallery=1">Gallery</a><a href="/privacy">Privacy</a></nav></header>`;
+}
+
+function siteFooter(className = 'site-footer') {
+  return `<footer class="${className}"><p>Wallpage turns idle displays into moving art.</p><nav aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><p>Built by Param Factory · ${BUILD_LABEL}</p></footer>`;
+}
 
 const icon = (name: 'previous' | 'next' | 'pause' | 'play' | 'clock' | 'share' | 'expand' | 'settings' | 'close' | 'grid') => {
   const paths: Record<typeof name, string> = {
@@ -24,75 +65,114 @@ const icon = (name: 'previous' | 'next' | 'pause' | 'play' | 'clock' | 'share' |
 
 function renderLegal(path: string) {
   const privacy = path === '/privacy' || path === '/privacy/';
-  document.title = `${privacy ? 'Privacy' : 'Terms'} — Wallpage`;
+  setMetadata(
+    `${privacy ? 'Privacy' : 'Terms'} — Wallpage`,
+    privacy ? 'How Wallpage stores display settings and handles Collector license checks.' : 'Terms for using the Wallpage browser gallery and Collector scenes.',
+    privacy ? '/privacy' : '/terms',
+  );
   app.innerHTML = `
     <div class="legal-shell">
-      <header class="legal-header"><a class="wordmark" href="/" aria-label="Wallpage home"><span></span>Wallpage</a></header>
+      ${siteHeader()}
       <main id="main" class="legal-copy">
-        <p class="eyebrow">Plain-language policy · 27 August 2026</p>
-        <h1>${privacy ? 'A quiet screen should be private.' : 'Simple terms for a quiet gallery.'}</h1>
+        <p class="eyebrow">Plain-language policy · 28 August 2026</p>
+        <h1 tabindex="-1">${privacy ? 'Privacy on your idle display' : 'Terms for using Wallpage'}</h1>
         ${privacy ? `
-          <h2>What stays on your device</h2><p>Your clock, rotation, dimming, welcome-state, and a pasted Collector license token are stored in your browser. Your daily seed and generated artwork are computed locally. Wallpage does not create an account, use advertising cookies, fingerprint your device, or include analytics.</p>
-          <h2>When the network is used</h2><p>The gallery works offline after its first visit. Collector scenes require a live verification: the license token is sent securely to the configured Sociobot billing verifier and is not treated as an unlock by itself. Wallpage does not receive payment card details.</p>
-          <h2>Your control</h2><p>Use “Reset local data” in Settings to remove preferences and any saved license key. Clearing this site’s browser data does the same. Questions can be sent to <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p>
+          <h2>What stays on this device</h2><p>Your display settings stay in this browser. Demo settings use a separate temporary storage key.</p><p>Wallpage has no accounts, ads, analytics, or tracking cookies.</p>
+          <h2>When Wallpage uses the network</h2><p>Gallery files come from Wallpage. Restoring Collector sends the license key to the Sociobot verifier.</p><p>Collector checkout opens on Sociobot, outside Wallpage.</p>
+          <h2>Delete your data</h2><p>Use “Reset local data” in Display settings. In demo mode, use “Reset demo.” You can also clear this site’s browser data.</p><p>Questions can be sent to <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p>
         ` : `
           <h2>Using Wallpage</h2><p>Wallpage is provided as a browser-based ambient display. You may use it personally or in a workplace display. Do not resell the service, interfere with its operation, or represent its generative scenes as your own downloadable collection.</p>
-          <h2>Collector access</h2><p>Collector access is a one-time license sold and verified through Sociobot when checkout is enabled. Paid scenes unlock only after the server confirms an active license; they remain locked while offline, expired, revoked, or unverifiable. Refunds and regional purchase terms shown at checkout apply.</p>
+          <h2>Collector access</h2><p>Collector costs $19 once and adds two scenes. Sociobot sells and verifies the license.</p><p>Collector scenes unlock only after the verifier confirms an active license. They stay locked while offline or when verification fails.</p>
           <h2>Availability</h2><p>The service and its generated visuals are provided “as is.” We may improve or replace individual scene algorithms while preserving access to the core gallery. Wallpage is visual ambience, not a time-critical clock or safety display.</p>
         `}
-        <p><a class="text-link" href="/">← Return to the gallery</a></p>
+        <p><a class="text-link" href="/">← Return to Wallpage</a></p>
       </main>
-      <footer class="legal-footer">© 2026 Sociobot · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></footer>
+      ${siteFooter('legal-footer')}
+      <div id="route-status" class="sr-only" aria-live="polite"></div>
     </div>`;
+  routeFocus();
 }
 
-if (/^\/(privacy|terms)\/?$/.test(location.pathname)) {
-  renderLegal(location.pathname);
-} else {
-  renderGallery();
+function renderNotFound() {
+  setMetadata('Page not found — Wallpage', 'This Wallpage address does not exist. Return to the gallery.', '/404');
+  app.innerHTML = `<div class="legal-shell not-found">${siteHeader()}<main id="main" class="legal-copy"><p class="eyebrow">404 · Lost scene</p><h1 tabindex="-1">This page was not found</h1><p>The address does not lead to a Wallpage scene or guide.</p><p><a class="primary-button" href="/">Return to Wallpage</a></p></main>${siteFooter('legal-footer')}<div id="route-status" class="sr-only" aria-live="polite"></div></div>`;
+  routeFocus();
 }
 
-function renderGallery() {
+function renderLanding() {
+  setMetadata('Wallpage — moving art for idle screens', 'Turn a TV, wall display, or second monitor into a calm gallery of moving browser scenes.', '/');
+  app.innerHTML = `<div class="landing-shell">
+    ${siteHeader()}
+    <main id="main">
+      <section class="landing-hero" aria-labelledby="landing-title">
+        <div class="hero-art"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="1200" height="800" alt="A fictional tidal observatory with dark mineral pools and low fog" decoding="async" fetchpriority="high"></picture></div>
+        <div class="hero-copy"><p class="eyebrow">Browser gallery for idle displays</p><h1 id="landing-title" tabindex="-1">Turn an idle screen into moving art</h1><p class="hero-support">For TVs, wall displays, and second monitors that need a calm display.</p><div class="hero-actions"><a class="primary-button" href="/?demo=1">Try it with sample data</a><span>Opens a running sample scene and its controls.</span></div><ul class="plain-facts"><li>Runs in your browser.</li><li>No account or ads.</li><li>Eight scenes free; Collector is $19 once.</li></ul></div>
+      </section>
+      <section class="landing-section preview-section" aria-labelledby="preview-title"><div><p class="eyebrow">Live preview</p><h2 id="preview-title">See the gallery before you leave it running</h2><p>Moon tide is ready in the sample gallery. Pause it, change scenes, show the clock, or adjust the display.</p><a class="text-link" href="/?demo=1">Open the Moon tide sample →</a></div><div class="preview-slate" role="img" aria-label="Preview of the Moon tide scene"><span>02 / 10</span><strong>Moon tide</strong><small>Layered tidal contours move beneath a low copper moon.</small></div></section>
+      <section class="landing-section" aria-labelledby="works-title"><p class="eyebrow">How it works</p><h2 id="works-title">Set up an idle display in three steps</h2><ol class="steps"><li><strong>Open a scene.</strong><span>Use a TV browser or this tab on a second monitor.</span></li><li><strong>Set the display.</strong><span>Choose rotation, clock, brightness, and night dimming.</span></li><li><strong>Leave it running.</strong><span>The controls move aside while the scene stays visible.</span></li></ol></section>
+      <section class="landing-section split-section"><div><p class="eyebrow">Privacy</p><h2>What Wallpage does not do</h2><p>Wallpage has no account, ads, or analytics. Display settings stay in this browser. A Collector license contacts Sociobot only when you restore it.</p><a class="text-link" href="/privacy">Read the privacy policy →</a></div><div><p class="eyebrow">Optional Collector</p><h2>Add two scenes for $19 once</h2><p>The free gallery has eight scenes. Collector adds Fault garden and Aurora basin after Sociobot verifies the license.</p><a class="secondary-button" href="https://api.sociobot.in/api/v1/products/wallpage/checkout" rel="noreferrer">See the $19 Collector price</a></div></section>
+    </main>
+    ${siteFooter()}
+    <div id="route-status" class="sr-only" aria-live="polite"></div>
+  </div>`;
+  routeFocus();
+}
+
+const queryAtLoad = new URLSearchParams(location.search);
+const isDemoRoute = location.pathname === '/demo' || (location.pathname === '/' && queryAtLoad.get('demo') === '1');
+const isGalleryRoute = location.pathname === '/' && (queryAtLoad.has('gallery') || queryAtLoad.has('scene') || queryAtLoad.has('seed'));
+
+if (/^\/(privacy|terms)\/?$/.test(location.pathname)) renderLegal(location.pathname);
+else if (isDemoRoute || isGalleryRoute) renderGallery(isDemoRoute);
+else if (location.pathname === '/' || location.pathname === '') renderLanding();
+else renderNotFound();
+
+addEventListener('pageshow', () => routeFocus());
+
+function renderGallery(demoMode = false) {
+  setMetadata(demoMode ? 'Demo — Wallpage' : 'Gallery — Wallpage', demoMode ? 'Try a fixed Moon tide sample without changing your Wallpage settings.' : 'Run Wallpage scenes on a TV, wall display, or second monitor.', demoMode ? '/?demo=1' : '/');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let settings = readSettings(window.localStorage);
+  const settingsKey = demoMode ? DEMO_SETTINGS_KEY : 'wallpage:settings';
+  let settings = readSettings(window.localStorage, settingsKey);
+  if (demoMode) settings = { ...defaultSettings, ...settings, seenWelcome: true, rotationMinutes: 0 };
   // A writable browser value is never an entitlement. It may retain a license
   // token for restore, but every app session starts locked until Sociobot says
   // that token is valid for this product.
-  localStorage.removeItem('wallpage:collector');
+  if (!demoMode) localStorage.removeItem('wallpage:collector');
   let collectorUnlocked = false;
   let collectorReason: EntitlementReason | 'idle' | 'checking' = 'idle';
-  let paused = reducedMotion || !settings.seenWelcome;
-  let activeIndex = 0;
+  let paused = reducedMotion || (!demoMode && !settings.seenWelcome);
+  let activeIndex = demoMode ? scenes.findIndex((scene) => scene.id === 'moon-tide') : 0;
   let rotationTimer = 0;
   let chromeTimer = 0;
   let lastClockMinute = -1;
 
   const query = new URLSearchParams(location.search);
-  const licenseFromReturn = query.get('license')?.trim();
-  if (licenseFromReturn) {
+  const licenseFromReturn = demoMode ? undefined : query.get('license')?.trim();
+  if (!demoMode && licenseFromReturn) {
     localStorage.setItem(LICENSE_STORAGE_KEY, licenseFromReturn);
     query.delete('license');
     const cleanUrl = new URL(location.href);
     cleanUrl.search = query.toString();
     history.replaceState({}, '', cleanUrl);
   }
-  const seed = query.get('seed')?.slice(0, 80) || seedOfDay();
-  const requestedScene = query.get('scene');
+  const seed = demoMode ? DEMO_SEED : query.get('seed')?.slice(0, 80) || seedOfDay();
+  const requestedScene = demoMode ? query.get('scene') || 'moon-tide' : query.get('scene');
   const requestedIndex = scenes.findIndex((scene) => scene.id === requestedScene);
   if (requestedIndex >= 0 && (!scenes[requestedIndex].collector || collectorUnlocked)) activeIndex = requestedIndex;
 
   app.innerHTML = `
-    <main id="main" class="gallery" data-chrome="visible">
-      <h1 class="sr-only">Wallpage ambient generative gallery</h1>
+    <main id="main" class="gallery ${demoMode ? 'demo-gallery' : ''}" data-chrome="visible">
+      <h1 class="sr-only" tabindex="-1">${demoMode ? 'Watch a sample scene on your idle display' : 'Turn an idle screen into moving art'}</h1>
       <canvas id="scene" aria-hidden="true"></canvas>
       <div class="scene-fallback" role="img" aria-label="A dark tidal observatory in blue-green fog"></div>
       <div class="dim-layer" aria-hidden="true"></div>
       <header class="masthead chrome">
-        <button class="wordmark button-reset" id="open-help" aria-label="Open Wallpage guide"><span></span>Wallpage</button>
-        <p><span id="scene-number">01</span> / <span id="scene-count">${scenes.length.toString().padStart(2, '0')}</span></p>
+        <a class="wordmark" href="/" aria-label="Wallpage home"><span></span>Wallpage</a>
+        <nav class="gallery-nav" aria-label="Gallery navigation"><button class="button-reset nav-button" id="open-help">Guide</button><a href="/?demo=1">Demo</a><a href="/privacy">Privacy</a><p><span id="scene-number">01</span> / <span id="scene-count">${scenes.length.toString().padStart(2, '0')}</span></p></nav>
       </header>
       <section class="scene-caption chrome" aria-live="polite" aria-atomic="true">
-        <p class="eyebrow" id="scene-kind">Seed of the day · ${escapeText(seed)}</p>
+        <p class="eyebrow" id="scene-kind">${demoMode ? 'Sample scene setting' : 'Today’s scene setting'} · ${escapeText(seed)}</p>
         <h2 id="scene-title">${scenes[activeIndex].title}</h2>
         <p id="scene-description">${scenes[activeIndex].description}</p>
       </section>
@@ -107,49 +187,51 @@ function renderGallery() {
         <span class="dock-rule" aria-hidden="true"></span>
         <button id="pause" class="icon-button" aria-label="${paused ? 'Play animation' : 'Pause animation'}">${icon(paused ? 'play' : 'pause')}</button>
         <button id="clock-toggle" class="icon-button" aria-label="Hide clock" aria-pressed="${settings.clock}">${icon('clock')}</button>
-        <button id="share" class="icon-button" aria-label="Share this seed">${icon('share')}</button>
+        <button id="share" class="icon-button" aria-label="Share this scene">${icon('share')}</button>
         <button id="fullscreen" class="icon-button" aria-label="Enter fullscreen">${icon('expand')}</button>
         <button id="settings" class="icon-button" aria-label="Open settings">${icon('settings')}</button>
       </nav>
-      <footer class="corner-footer chrome"><span>Canvas generated locally</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a></footer>
-      <div class="connection" id="connection" role="status" hidden>Offline · the gallery will keep playing</div>
+      <footer class="corner-footer chrome"><span>This scene runs in your browser.</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>Param Factory · ${BUILD_LABEL}</span></footer>
+      ${demoMode ? '<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><button type="button" id="reset-demo">Reset demo</button><a href="/?gallery=1" id="start-real">Start for real</a></aside>' : ''}
+      <div class="connection" id="connection" role="status" hidden>Offline · the gallery keeps playing</div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div id="route-status" class="sr-only" aria-live="polite"></div>
     </main>
 
     <dialog id="welcome" class="welcome-dialog" aria-labelledby="welcome-title">
       <div class="welcome-art"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="A fictional tidal observatory of dark mineral pools, luminous currents, and low fog" decoding="async" fetchpriority="high"></picture></div>
       <div class="welcome-copy">
-        <p class="eyebrow">An idle screen, alive</p>
-        <h2 id="welcome-title">Time, made ambient.</h2>
-        <p>Ten slow environments evolve from today’s seed. Leave one running, or let the gallery wander.</p>
-        <ul><li><kbd>←</kbd> <kbd>→</kbd> change scene</li><li><kbd>Space</kbd> pause</li><li><kbd>C</kbd> clock</li><li><kbd>F</kbd> full screen</li></ul>
-        <button id="enter-gallery" class="primary-button">Enter the gallery <span aria-hidden="true">→</span></button>
-        <p class="generated-note">Artwork and live scenes are original, with the still artwork generated for Wallpage.</p>
+        <p class="eyebrow">Browser gallery for idle displays</p>
+        <h2 id="welcome-title">Turn an idle screen into moving art</h2>
+        <p>For TVs, wall displays, and second monitors that need a calm display.</p>
+        <ul><li><kbd>←</kbd> <kbd>→</kbd> change scene</li><li><kbd>Space</kbd> pause</li><li><kbd>C</kbd> clock</li><li><kbd>F</kbd> fullscreen</li></ul>
+        <button id="enter-gallery" class="primary-button">Open today’s gallery <span aria-hidden="true">→</span></button>
+        <p class="generated-note">The still artwork was generated for Wallpage. Provenance is in the project design notes.</p>
       </div>
     </dialog>
 
     <dialog id="library-dialog" class="panel-dialog" aria-labelledby="library-title">
-      <div class="dialog-heading"><div><p class="eyebrow">The collection</p><h2 id="library-title">Choose an environment</h2></div><button class="icon-button close-dialog" aria-label="Close scene library">${icon('close')}</button></div>
+      <div class="dialog-heading"><div><p class="eyebrow">The gallery</p><h2 id="library-title">Choose a scene</h2></div><button class="icon-button close-dialog" aria-label="Close scene library">${icon('close')}</button></div>
       <div class="scene-grid" id="scene-grid"></div>
     </dialog>
 
     <dialog id="settings-dialog" class="panel-dialog settings-dialog" aria-labelledby="settings-title">
       <form method="dialog" id="settings-form">
-        <div class="dialog-heading"><div><p class="eyebrow">Projection room</p><h2 id="settings-title">Display settings</h2></div><button class="icon-button close-dialog" aria-label="Close settings">${icon('close')}</button></div>
-        <div class="setting-row"><div><label for="rotation">Auto-rotate</label><p>Move to the next scene on a quiet interval.</p></div><select id="rotation"><option value="0">Off</option><option value="1">Every minute</option><option value="5">Every 5 minutes</option><option value="15">Every 15 minutes</option><option value="30">Every 30 minutes</option></select></div>
-        <div class="setting-row"><div><label for="quality">Motion quality</label><p>Lower rates save energy on long-running displays.</p></div><select id="quality"><option value="24">Eco · 24 fps</option><option value="30">Balanced · 30 fps</option><option value="45">Smooth · 45 fps</option></select></div>
-        <div class="setting-row"><div><label for="brightness">Scene brightness</label><p>Dim the canvas without dimming controls.</p></div><input id="brightness" type="range" min="35" max="100" step="5"></div>
+        <div class="dialog-heading"><div><p class="eyebrow">Display settings</p><h2 id="settings-title">Adjust the idle display</h2></div><button class="icon-button close-dialog" aria-label="Close settings">${icon('close')}</button></div>
+        <div class="setting-row"><div><label for="rotation">Auto-rotate</label><p>Change scenes every 1, 5, 15, or 30 minutes.</p></div><select id="rotation"><option value="0">Off</option><option value="1">Every minute</option><option value="5">Every 5 minutes</option><option value="15">Every 15 minutes</option><option value="30">Every 30 minutes</option></select></div>
+        <div class="setting-row"><div><label for="quality">Motion quality</label><p>Choose fewer or more frames per second.</p></div><select id="quality"><option value="24">Eco · 24 fps</option><option value="30">Balanced · 30 fps</option><option value="45">Smooth · 45 fps</option></select></div>
+        <div class="setting-row"><div><label for="brightness">Scene brightness</label><p>Dim the scene, not the controls.</p></div><input id="brightness" type="range" min="35" max="100" step="5"></div>
         <div class="setting-row"><div><label for="date-toggle">Show date</label><p>Keep the calendar below the clock.</p></div><input id="date-toggle" class="switch" type="checkbox"></div>
-        <div class="setting-row"><div><label for="night-dim">Dim at night</label><p>Apply an extra veil during your sleep hours.</p></div><input id="night-dim" class="switch" type="checkbox"></div>
+        <div class="setting-row"><div><label for="night-dim">Dim at night</label><p>Dim scenes during these hours.</p></div><input id="night-dim" class="switch" type="checkbox"></div>
         <div class="time-pair"><label>Dim from <input id="dim-start" type="time"></label><label>Until <input id="dim-end" type="time"></label></div>
-        <section class="collector-panel" aria-labelledby="collector-heading"><p class="eyebrow">Optional</p><h3 id="collector-heading">Collector pass</h3><p id="collector-status">Unlock Fault garden and Aurora basin with a one-time purchase. The price is shown before checkout; paid scenes stay locked until Sociobot verifies a license.</p><div class="license-actions"><a class="secondary-button" id="buy-collector" target="_blank" rel="noreferrer">Get Collector</a><button class="secondary-button" type="button" id="show-license">Enter license</button></div><div class="license-form" id="license-form" hidden><label for="license-key">License key</label><div><input id="license-key" autocomplete="off" spellcheck="false" aria-describedby="license-message"><button class="primary-button" type="button" id="verify-license">Verify</button></div><p id="license-message" role="status"></p></div></section>
-        <button class="text-button danger-button" type="button" id="reset-data">Reset local data</button>
+        <section class="collector-panel" aria-labelledby="collector-heading"><p class="eyebrow">Optional</p><h3 id="collector-heading">Collector · $19 once</h3><p id="collector-status">Add Fault garden and Aurora basin. Paid scenes stay locked until Sociobot verifies the license.</p><div class="license-actions"><a class="secondary-button" id="buy-collector" target="_blank" rel="noreferrer">See the $19 Collector price</a><button class="secondary-button" type="button" id="show-license">Restore Collector license</button></div><div class="license-form" id="license-form" hidden><label for="license-key">License key</label><div><input id="license-key" autocomplete="off" spellcheck="false" aria-describedby="license-message"><button class="primary-button" type="button" id="verify-license">Verify license</button></div><p id="license-message" role="status" aria-live="polite"></p></div></section>
+        <button class="text-button danger-button" type="button" id="reset-data">${demoMode ? 'Reset demo settings' : 'Reset local data'}</button>
       </form>
     </dialog>
 
     <dialog id="help-dialog" class="panel-dialog help-dialog" aria-labelledby="help-title">
-      <div class="dialog-heading"><div><p class="eyebrow">Wallpage guide</p><h2 id="help-title">Make a room feel less idle</h2></div><button class="icon-button close-dialog" aria-label="Close guide">${icon('close')}</button></div>
-      <div class="help-layout"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="The fictional tidal observatory artwork made for Wallpage" decoding="async" loading="lazy"></picture><div><p>Wallpage draws every moving scene in this browser. No video stream, account, ads, or installation is required.</p><h3>Put it on a larger screen</h3><ol><li>Open this page in a TV browser, or cast this tab from your browser menu.</li><li>Press <kbd>F</kbd> or the expand button for full screen.</li><li>Move the pointer away; the controls fade after a few seconds.</li></ol><h3>Use it as a screensaver</h3><p>On macOS or Windows, use a trusted “web page screensaver” utility and set its URL to this page. Wallpage itself does not install system software.</p><h3>Keyboard & remote</h3><p><kbd>←</kbd>/<kbd>J</kbd> previous · <kbd>→</kbd>/<kbd>K</kbd> next · <kbd>Space</kbd> pause · <kbd>C</kbd> clock · <kbd>S</kbd> settings · <kbd>H</kbd> guide.</p></div></div>
+      <div class="dialog-heading"><div><p class="eyebrow">Wallpage guide</p><h2 id="help-title">Use Wallpage on a larger screen</h2></div><button class="icon-button close-dialog" aria-label="Close guide">${icon('close')}</button></div>
+      <div class="help-layout"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="The fictional tidal observatory artwork made for Wallpage" decoding="async" loading="lazy"></picture><div><p>Each moving scene is drawn in this browser. The gallery uses no video stream, account, or ads.</p><h3>Put it on a larger screen</h3><ol><li>Open this page in a TV browser, or cast this tab from your browser menu.</li><li>Press <kbd>F</kbd> or the expand button for fullscreen.</li><li>Move the pointer away. The controls fade after 4.5 seconds.</li></ol><h3>Show it on an idle display</h3><p>Keep this browser tab open on a TV, wall display, or second monitor.</p><h3>Keyboard and remote controls</h3><p><kbd>←</kbd>/<kbd>J</kbd> previous · <kbd>→</kbd>/<kbd>K</kbd> next · <kbd>Space</kbd> pause · <kbd>C</kbd> clock · <kbd>S</kbd> settings · <kbd>H</kbd> guide.</p></div></div>
     </dialog>`;
 
   const canvas = document.querySelector<HTMLCanvasElement>('#scene')!;
@@ -226,7 +308,7 @@ function renderGallery() {
   function availableScenes() { return scenes.filter((scene) => !scene.collector || collectorUnlocked); }
 
   function saveSettings() {
-    localStorage.setItem('wallpage:settings', JSON.stringify(settings));
+    localStorage.setItem(settingsKey, JSON.stringify(settings));
     applySettings();
   }
 
@@ -321,10 +403,10 @@ function renderGallery() {
     shareUrl.searchParams.set('seed', seed);
     shareUrl.searchParams.set('scene', scenes[activeIndex].id);
     try {
-      if (navigator.share) await navigator.share({ title: `${scenes[activeIndex].title} — Wallpage`, text: `Watch today’s ${scenes[activeIndex].title} seed evolve.`, url: shareUrl.toString() });
+      if (navigator.share) await navigator.share({ title: `${scenes[activeIndex].title} — Wallpage`, text: `Watch the ${scenes[activeIndex].title} scene.`, url: shareUrl.toString() });
       else {
         await navigator.clipboard.writeText(shareUrl.toString());
-        showToast('Seed link copied');
+        showToast('Scene link copied');
       }
     } catch (error) {
       if ((error as DOMException).name !== 'AbortError') showToast('Could not share. Copy the address from your browser.');
@@ -347,8 +429,12 @@ function renderGallery() {
     const buy = document.querySelector<HTMLAnchorElement>('#buy-collector')!;
     const showLicense = document.querySelector<HTMLButtonElement>('#show-license')!;
     const buyUrl = import.meta.env.VITE_SOCIOBOT_BUY_URL;
-    if (collectorUnlocked) {
-      status.textContent = 'Collector is active for this session. All ten environments are available.';
+    if (demoMode) {
+      status.textContent = 'Collector stays locked in demo mode. Start for real to buy or restore a license.';
+      buy.hidden = true;
+      showLicense.hidden = true;
+    } else if (collectorUnlocked) {
+      status.textContent = 'Collector is active for this session. All ten scenes are available.';
       buy.hidden = true;
       showLicense.hidden = true;
     } else {
@@ -356,7 +442,7 @@ function renderGallery() {
       if (buyUrl) buy.href = buyUrl;
       showLicense.hidden = false;
       const messages: Record<typeof collectorReason, string> = {
-        idle: buyUrl ? 'Unlock Fault garden and Aurora basin with a one-time license. Paid scenes stay locked until Sociobot verifies it.' : 'Collector checkout is not configured here. An existing license can be checked when a verifier is configured.',
+        idle: buyUrl ? 'Add Fault garden and Aurora basin for $19 once. Paid scenes stay locked until Sociobot verifies the license.' : 'Collector checkout is not configured here. An existing license can be checked when a verifier is configured.',
         checking: 'Checking the saved license with Sociobot. Paid scenes remain locked until it is confirmed.',
         offline: 'You are offline, so Collector cannot be confirmed. Paid scenes stay locked; reconnect to verify.',
         expired: 'This license has expired and Collector is no longer active. Paid scenes stay locked.',
@@ -412,7 +498,7 @@ function renderGallery() {
     updateCollectorPanel();
     drawSceneGrid();
     button.disabled = false;
-    button.textContent = 'Verify';
+    button.textContent = 'Verify license';
   }
 
   document.querySelector('#previous')!.addEventListener('click', () => changeScene(-1));
@@ -464,9 +550,23 @@ function renderGallery() {
   document.querySelector('#show-license')!.addEventListener('click', () => { const form = document.querySelector<HTMLElement>('#license-form')!; form.hidden = false; document.querySelector<HTMLInputElement>('#license-key')!.focus(); });
   document.querySelector('#verify-license')!.addEventListener('click', () => { void verifyLicense(); });
   document.querySelector('#reset-data')!.addEventListener('click', () => {
+    if (demoMode) {
+      clearDemoData();
+      location.replace('/?demo=1');
+      return;
+    }
     if (!confirm('Reset display settings and remove the saved Collector license from this browser?')) return;
-    localStorage.removeItem('wallpage:settings'); localStorage.removeItem(LICENSE_STORAGE_KEY); localStorage.removeItem('wallpage:collector');
+    localStorage.removeItem(settingsKey); localStorage.removeItem(LICENSE_STORAGE_KEY); localStorage.removeItem('wallpage:collector');
     settings = { ...defaultSettings, seenWelcome: true }; collectorUnlocked = false; collectorReason = 'idle'; saveSettings(); populateSettings(); drawSceneGrid(); showToast('Local Wallpage data reset');
+  });
+  document.querySelector<HTMLAnchorElement>('#start-real')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    clearDemoData();
+    location.assign('/?gallery=1');
+  });
+  document.querySelector<HTMLButtonElement>('#reset-demo')?.addEventListener('click', () => {
+    clearDemoData();
+    location.replace('/?demo=1');
   });
 
   document.addEventListener('keydown', (event) => {
@@ -499,7 +599,7 @@ function renderGallery() {
   addEventListener('online', () => {
     updateConnection();
     showToast('Back online');
-    const savedLicense = localStorage.getItem(LICENSE_STORAGE_KEY);
+    const savedLicense = demoMode ? null : localStorage.getItem(LICENSE_STORAGE_KEY);
     if (savedLicense && !collectorUnlocked) void verifyLicense(savedLicense);
   });
   addEventListener('offline', updateConnection);
@@ -510,13 +610,15 @@ function renderGallery() {
   updateClock();
   updateConnection();
   window.setInterval(updateClock, 1000);
-  if (!settings.seenWelcome) showModal(welcome);
+  if (!settings.seenWelcome && !demoMode) showModal(welcome);
   else { wakeChrome(); startRendererWhenIdle(); }
   if (reducedMotion) showToast('Animation paused to respect reduced motion.');
 
-  const savedLicense = localStorage.getItem(LICENSE_STORAGE_KEY);
+  const savedLicense = demoMode ? null : localStorage.getItem(LICENSE_STORAGE_KEY);
   if (savedLicense) void verifyLicense(savedLicense);
   else updateCollectorPanel();
+
+  routeFocus();
 
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     addEventListener('load', () => {

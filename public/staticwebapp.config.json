@@ -7,11 +7,43 @@
     {
       "route": "/sw.js",
       "headers": { "Cache-Control": "no-cache" }
+    },
+    {
+      "route": "/robots.txt"
+    },
+    {
+      "route": "/sitemap.xml"
+    },
+    {
+      "route": "/manifest.webmanifest"
+    },
+    {
+      "route": "/favicon.svg"
+    },
+    {
+      "route": "/apple-touch-icon.png"
+    },
+    {
+      "route": "/",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/demo",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/privacy",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms",
+      "rewrite": "/index.html"
     }
   ],
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.svg", "/*.webmanifest", "/*.js"]
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html"
+    }
   },
   "globalHeaders": {
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.sociobot.in https://pilot-api.sociobot.in; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",

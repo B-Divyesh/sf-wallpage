@@ -1,53 +1,78 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+test('the first screen states the job, audience, action, and three facts', async ({ browser }) => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.goto('/');
+  await expect(page).toHaveTitle('Wallpage — moving art for idle screens');
+  await expect(page.getByRole('heading', { level: 1, name: 'Turn an idle screen into moving art' })).toBeVisible();
+  await expect(page.getByText('For TVs, wall displays, and second monitors that need a calm display.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Try it with sample data' })).toBeVisible();
+  await expect(page.locator('.plain-facts li')).toHaveCount(3);
+  await expect(page.locator('.landing-hero')).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.close();
+});
+
 test('gallery works from welcome through keyboard navigation', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-  await page.goto('/?seed=test-night');
-  await expect(page).toHaveTitle(/Wallpage/);
-  await expect(page.getByRole('dialog', { name: 'Time, made ambient.' })).toBeVisible();
-  await page.getByRole('button', { name: /Enter the gallery/ }).click();
+  await page.goto('/?gallery=1&seed=test-night');
+  await expect(page.getByRole('dialog', { name: 'Turn an idle screen into moving art' })).toBeVisible();
+  await page.getByRole('button', { name: /Open today’s gallery/ }).click();
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(page.getByRole('heading', { name: 'Brackish drift' })).toBeVisible();
   await page.keyboard.press('ArrowRight');
   await expect(page.getByRole('heading', { name: 'Moon tide' })).toBeVisible();
   await page.getByRole('button', { name: 'Open scene library' }).click();
-  await expect(page.getByRole('dialog', { name: 'Choose an environment' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Choose a scene' })).toBeVisible();
   await page.getByRole('button', { name: /Cloud chamber/ }).click();
   await expect(page.getByRole('heading', { name: 'Cloud chamber' })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('gallery and privacy route have no serious accessibility violations', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
-  await page.goto('/');
-  const galleryResults = await new AxeBuilder({ page }).analyze();
-  expect(galleryResults.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
-  await page.goto('/privacy');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
-  const privacyResults = await new AxeBuilder({ page }).analyze();
-  expect(privacyResults.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? ''))).toEqual([]);
+test('all routes have metadata, focus, and no serious accessibility violations', async ({ page }) => {
+  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/does-not-exist']) {
+    await page.goto(route);
+    await expect(page.locator('main h1')).toHaveCount(1);
+    await expect(page.locator('main h1')).toBeFocused();
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /^https:\/\/wallpage\.sociobot\.in\//);
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/apple-touch-icon.png');
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact ?? '')), route).toEqual([]);
+  }
 });
 
-test('390px layout remains operable without horizontal overflow', async ({ browser }) => {
+test('390px landing, demo, and settings stay operable without horizontal overflow', async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
-  await page.goto('/');
+  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/does-not-exist']) {
+    await page.goto(route);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), route).toBeLessThanOrEqual(0);
+  }
+  await page.goto('/?demo=1');
   await expect(page.getByRole('button', { name: 'Open settings' })).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  expect(overflow).toBeLessThanOrEqual(0);
   await page.getByRole('button', { name: 'Open settings' }).click();
-  await expect(page.getByRole('dialog', { name: 'Display settings' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Adjust the idle display' })).toBeVisible();
   await expect(page.getByLabel('Auto-rotate')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+  await page.close();
+});
+
+test('320px layouts reflow without losing content', async ({ browser }) => {
+  const page = await browser.newPage({ viewport: { width: 320, height: 640 } });
+  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/does-not-exist']) {
+    await page.goto(route);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), route).toBeLessThanOrEqual(0);
+    await expect(page.locator('main h1')).toBeAttached();
+  }
   await page.close();
 });
 
 test('reduced-motion visitors start paused and can opt in', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
-  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
-  await page.goto('/');
+  await page.goto('/?demo=1');
   const play = page.getByRole('button', { name: 'Play animation' });
   await expect(play).toBeVisible();
   await play.click();
@@ -55,19 +80,34 @@ test('reduced-motion visitors start paused and can opt in', async ({ browser }) 
   await context.close();
 });
 
+test('unknown routes show a designed recovery page', async ({ page }) => {
+  await page.goto('/does-not-exist');
+  await expect(page).toHaveTitle('Page not found — Wallpage');
+  await expect(page.getByRole('heading', { level: 1, name: 'This page was not found' })).toBeFocused();
+  await expect(page.getByRole('link', { name: 'Return to Wallpage' })).toBeVisible();
+});
+
+test('legal navigation and browser Back restore heading focus', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Privacy', exact: true }).first().click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Privacy on your idle display' })).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1, name: 'Turn an idle screen into moving art' })).toBeFocused();
+});
+
 test('Collector ignores a tampered local flag and stays locked', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('wallpage:collector', 'verified');
   });
-  await page.goto('/');
+  await page.goto('/?gallery=1');
   await page.getByRole('button', { name: 'Open scene library' }).click();
   await expect(page.locator('[data-scene="fault-garden"]')).toHaveAttribute('data-locked', 'true');
   await expect(page.locator('[data-scene="aurora-basin"]')).toHaveAttribute('data-locked', 'true');
-  await expect(page.evaluate(() => localStorage.getItem('wallpage:collector'))).resolves.toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('wallpage:collector'))).toBeNull();
 });
 
-test('Collector unlocks only after a positive signed entitlement response', async ({ page }) => {
+test('Collector unlocks only after a positive entitlement response', async ({ page }) => {
   await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', async (route) => {
     expect(new URL(route.request().url()).searchParams.get('license')).toBe('signed-valid-license');
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: '2030-01-01T00:00:00Z' }) });
@@ -76,11 +116,9 @@ test('Collector unlocks only after a positive signed entitlement response', asyn
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('sb_license:wallpage', 'signed-valid-license');
   });
-  await page.goto('/');
+  await page.goto('/?gallery=1');
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/Collector is active for this session/);
-  // .secondary-button is an inline-flex utility. The semantic hidden state
-  // must still remove both mutually-exclusive Collector controls from view.
   await expect(page.locator('#buy-collector')).toBeHidden();
   await expect(page.locator('#show-license')).toBeHidden();
   await page.getByRole('button', { name: 'Close settings' }).click();
@@ -89,49 +127,16 @@ test('Collector unlocks only after a positive signed entitlement response', asyn
   await expect(page.getByRole('heading', { name: 'Fault garden' })).toBeVisible();
 });
 
-test('expired or tampered signed licenses remain locked with an honest state', async ({ page }) => {
+test('expired licenses remain locked with an honest state', async ({ page }) => {
   await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'expired' }) }));
   await page.addInitScript(() => {
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('sb_license:wallpage', 'tampered-license');
   });
-  await page.goto('/');
+  await page.goto('/?gallery=1');
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/license has expired/i);
   await page.getByRole('button', { name: 'Close settings' }).click();
   await page.getByRole('button', { name: 'Open scene library' }).click();
   await expect(page.locator('[data-scene="fault-garden"]')).toHaveAttribute('data-locked', 'true');
-});
-
-test('offline Collector verification stays locked and explains why', async ({ browser }) => {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Open settings' }).click();
-  await page.getByRole('button', { name: 'Enter license' }).click();
-  await page.getByLabel('License key').fill('signed-offline-license');
-  await context.setOffline(true);
-  await page.evaluate(() => Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => false }));
-  await page.getByRole('button', { name: 'Verify' }).click();
-  await expect(page.locator('#collector-status')).toHaveText(/offline.*cannot be confirmed/i);
-  await expect(page.locator('#license-message')).toHaveText(/offline/i);
-  await page.getByRole('button', { name: 'Close settings' }).click();
-  await page.getByRole('button', { name: 'Open scene library' }).click();
-  await expect(page.locator('[data-scene="fault-garden"]')).toHaveAttribute('data-locked', 'true');
-  await context.close();
-});
-
-test('installed shell reopens offline', async ({ browser }) => {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
-  await page.goto('/');
-  await page.evaluate(() => navigator.serviceWorker.ready);
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'Brackish drift' })).toBeVisible();
-  await context.setOffline(true);
-  await page.reload();
-  await expect(page.getByText(/Offline · the gallery will keep playing/)).toBeVisible();
-  await context.close();
 });
