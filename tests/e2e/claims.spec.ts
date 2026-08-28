@@ -35,6 +35,14 @@ test('@claim:demo-sandbox opens and resets an isolated fixed sample', async ({ p
   await page.goto('/demo?scene=cloud-chamber');
   await expect(page.getByRole('heading', { name: 'Moon tide' })).toBeVisible();
   await expect(page.getByText('Sample scene setting · sample-moon-tide-2042')).toBeVisible();
+
+  await page.goto('/?demo=1&scene=cloud-chamber');
+  await expect(page).toHaveTitle('Demo — Wallpage');
+  await expect(page.getByRole('heading', { name: 'Moon tide' })).toBeVisible();
+  await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reset demo' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Start for real' })).toBeVisible();
+  expect(await page.evaluate(() => Object.keys(localStorage).every((key) => key.startsWith('demo:') || key === 'wallpage:settings'))).toBe(true);
 });
 
 test('@claim:local-rendering draws all ten scenes without a media stream', async ({ page }) => {

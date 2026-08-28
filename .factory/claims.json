@@ -4,7 +4,7 @@
     "claim": "The sample opens with a fixed Moon tide scene and never changes normal Wallpage data.",
     "where": "landing action, demo banner, README",
     "test": "npm run test:claims -- --grep @claim:demo-sandbox",
-    "sandbox": "fresh browser context; enter /demo, change and reset demo settings, start for real, and compare storage namespaces"
+    "sandbox": "fresh browser context; enter /demo and ?demo=1, change and reset demo settings, start for real, and compare storage namespaces"
   },
   {
     "id": "local-rendering",
