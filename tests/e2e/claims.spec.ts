@@ -9,6 +9,8 @@ async function expectCanvasToChange(page: import('@playwright/test').Page) {
   await expect.poll(() => canvas.evaluate((node: HTMLCanvasElement) => node.toDataURL()), { timeout: 4000 }).not.toBe(first);
 }
 
+const verifierPattern = /https:\/\/api\.sociobot\.in\/api\/v1\/products\/wallpage(?:-test)?\/verify\?.*/;
+
 test('@claim:demo-sandbox opens and resets an isolated fixed sample', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ clock: false, seenWelcome: true })));
   await page.goto('/');
@@ -38,7 +40,7 @@ test('@claim:demo-sandbox opens and resets an isolated fixed sample', async ({ p
 test('@claim:local-rendering draws all ten scenes without a media stream', async ({ page }) => {
   const mediaRequests: string[] = [];
   page.on('request', (request) => { if (request.resourceType() === 'media') mediaRequests.push(request.url()); });
-  await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok' }) }));
+  await page.route(verifierPattern, (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok' }) }));
   await page.goto('/demo');
   await page.evaluate(() => {
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true, rotationMinutes: 0 }));
@@ -58,10 +60,11 @@ test('@claim:local-rendering draws all ten scenes without a media stream', async
   expect(mediaRequests).toEqual([]);
 });
 
-test('@claim:privacy-no-tracking keeps the complete demo flow same-origin', async ({ page }) => {
+test('@claim:privacy-no-tracking keeps the complete demo flow same-origin', async ({ page }, testInfo) => {
   const external: string[] = [];
+  const productOrigin = new URL(String(testInfo.project.use.baseURL)).origin;
   page.on('request', (request) => {
-    if (new URL(request.url()).origin !== 'http://127.0.0.1:4174') external.push(request.url());
+    if (new URL(request.url()).origin !== productOrigin) external.push(request.url());
   });
   await page.goto('/demo');
   await page.getByRole('button', { name: 'Open scene library' }).click();
@@ -87,7 +90,7 @@ test('@claim:collector-network contacts only the declared verifier when a licens
 
   const withLicense = await browser.newPage();
   const verifierRequests: string[] = [];
-  await withLicense.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', (route) => {
+  await withLicense.route(verifierPattern, (route) => {
     verifierRequests.push(route.request().url());
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok' }) });
   });
@@ -128,7 +131,7 @@ test('@claim:scene-count has eight free and two locked Collector scenes', async 
 });
 
 test('@claim:collector-license keeps scenes locked until verified by Sociobot', async ({ page }) => {
-  await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', (route) => {
+  await page.route(verifierPattern, (route) => {
     const valid = new URL(route.request().url()).searchParams.get('license') === 'signed-valid-license';
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify(valid ? { valid: true, reason: 'ok', expires_at: '2030-01-01T00:00:00Z' } : { valid: false, reason: 'invalid' }) });
   });
@@ -140,20 +143,20 @@ test('@claim:collector-license keeps scenes locked until verified by Sociobot', 
   await page.getByRole('button', { name: /Open today’s gallery/ }).click();
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.getByRole('heading', { name: 'Collector · $19 once' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Open checkout — $19 once (external)' })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/wallpage-test/checkout');
+  await expect(page.getByRole('link', { name: 'Open checkout — $19 once (external)' })).toHaveAttribute('href', /https:\/\/api\.sociobot\.in\/api\/v1\/products\/wallpage(?:-test)?\/checkout/);
   await expect(page.getByRole('link', { name: 'Open checkout — $19 once (external)' })).toHaveAttribute('target', '_blank');
   await expect(page.locator('iframe')).toHaveCount(0);
   await page.getByRole('button', { name: 'Restore Collector license' }).click();
   await page.getByLabel('License key').fill('tampered-license');
   await page.getByRole('button', { name: 'Verify license' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/could not be verified/i);
-  await page.unroute('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**');
+  await page.unroute(verifierPattern);
   await page.context().setOffline(true);
   await page.getByLabel('License key').fill('signed-offline-license');
   await page.getByRole('button', { name: 'Verify license' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/offline.*cannot be confirmed/i);
   await page.context().setOffline(false);
-  await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: '2030-01-01T00:00:00Z' }) }));
+  await page.route(verifierPattern, (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: '2030-01-01T00:00:00Z' }) }));
   await page.getByLabel('License key').fill('signed-valid-license');
   await page.getByRole('button', { name: 'Verify license' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/Collector is active/);

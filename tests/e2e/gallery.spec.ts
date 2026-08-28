@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+const verifierPattern = /https:\/\/api\.sociobot\.in\/api\/v1\/products\/wallpage(?:-test)?\/verify\?.*/;
+
 test('the first screen states the job, audience, action, and three facts', async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto('/');
@@ -120,7 +122,7 @@ test('Collector ignores a tampered local flag and stays locked', async ({ page }
 });
 
 test('Collector unlocks only after a positive entitlement response', async ({ page }) => {
-  await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', async (route) => {
+  await page.route(verifierPattern, async (route) => {
     expect(new URL(route.request().url()).searchParams.get('license')).toBe('signed-valid-license');
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: '2030-01-01T00:00:00Z' }) });
   });
@@ -140,7 +142,7 @@ test('Collector unlocks only after a positive entitlement response', async ({ pa
 });
 
 test('expired licenses remain locked with an honest state', async ({ page }) => {
-  await page.route('https://api.sociobot.in/api/v1/products/wallpage-test/verify?**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'expired' }) }));
+  await page.route(verifierPattern, (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'expired' }) }));
   await page.addInitScript(() => {
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('sb_license:wallpage', 'tampered-license');

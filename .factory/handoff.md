@@ -1,28 +1,42 @@
-# Wallpage adversarial review 2 handoff — 2026-08-28
+# Wallpage polish 2 handoff — 2026-08-28
 
 ## Outcome
 
-Completed the second adversarial first-read review at repository commit `58abcd0e957f1f739ffd13b21072f3006a1aebd4`. The verdict is **FAIL** with 17 findings: four blocking, five significant, and eight minor. No product code was changed.
+Perfection-loop round 2 is complete. Every finding in `.factory/review-1.md` and `.factory/review-2.md` is resolved, including the reopened claim and route-shell blockers. The deployed product remains a Vite/TypeScript static web app with Wallpage’s original nocturnal environmental identity.
 
-The cold landing screen, isolated one-click demo, designed 404, accessibility baseline, and distinct visual identity pass. The blockers are incomplete local-rendering coverage, a Collector claim test that stops at status copy instead of proving paid-scene access, inconsistent gallery/demo route chrome with an incorrect Gallery canonical, and inaccurate Collector network-disclosure copy.
+Functional repair commit: `1b65f1c`. Production: <https://wallpage.sociobot.in>. Azure Static Web Apps deployment: `e8776f57-4477-469c-8933-18546e05a2ce`.
 
-The complete evidence, exact copy audit, earlier-finding recheck, fixes, and verdict are in `.factory/review-2.md`.
+The detailed finding-by-finding record is `.factory/polish-2.md`.
 
-## Verification completed
+## What changed
 
-- Opened live production in fresh Chromium contexts at 390 × 844 and 1440 × 900 before scrolling.
-- Exercised the live demo entry, animated sample, persistent banner, Reset demo, Start for real, storage isolation, offline reload, and same-origin network behavior.
-- Checked route metadata, deep links, browser Back/focus, route announcements, internal links, the external checkout handoff, and the HTTP 404.
-- Ran live AxeBuilder checks across root, demo, gallery, Privacy, Terms, and 404 with zero serious or critical violations.
-- Ran `/opt/fleet/lib/verify-url.sh https://wallpage.sociobot.in/`; it passed. Evidence is in `/tmp/wallpage-review-2-verify-yLnu19/verify.json`.
-- Used a clean clone at `/tmp/wallpage-review-2-clean-iCKFF6`. `npm ci` reported zero vulnerabilities.
-- Ran all ten exact commands from `.factory/claims.json` separately. Every command exited successfully, but two tests do not assert their complete registered outcomes; these are blocking findings F-2-1 and F-2-2.
-- Ran `npm test` (16/16), `npm run test:e2e` (22/22), `npm run check:budget`, and `npm run build`; all passed. The build produced `dist/index.html`, and initial JavaScript measured 36,508 bytes.
-- Rechecked the live route status on handoff: `/`, `/demo`, `/privacy`, and `/terms` returned 200; `/does-not-exist` returned 404.
+- Kept the plain first screen and made `/demo` the canonical one-click fixed Moon tide sample. Demo state remains isolated, resettable, and disposable.
+- Added real `/gallery` routing, canonical metadata, host configuration, sitemap coverage, and shared navigation/footer content across every route.
+- Expanded `.factory/claims.json` from 10 to 17 claims. Tests now prove all ten animated scene renderers, both Collector unlock outcomes, license network disclosure, display settings, sharing, fullscreen, TV-size keyboard use, wake lock, offline animation, build output, privacy, and budgets.
+- Added **Keep screen awake** with release/reacquire behavior and a clear unsupported-browser fallback.
+- Fixed auto-rotation: minute clock refreshes no longer reset the rotation timer before it fires.
+- Rewrote the remaining inaccurate or technical copy, labeled checkout as external, replaced “Live preview,” and generated public build labels from the Git commit.
+- Updated README, demo documentation, visual thesis, copy audit, catalog description, and the round-2 acceptance map.
 
-Screenshots are `/tmp/wallpage-review-2-phone-cold.png`, `/tmp/wallpage-review-2-desktop-cold.png`, and `/tmp/wallpage-review-2-demo-phone.png`.
+## Verification
 
-## How to reproduce
+A fresh clone at `/tmp/wallpage-polish-2-clean-BOtXUg` checked out `1b65f1c` and ran `npm ci` with zero vulnerabilities.
+
+- Every one of the 17 exact commands in `.factory/claims.json` passed separately.
+- `npm test`: 16/16 passed.
+- `npm run test:e2e`: 30/30 passed.
+- `npm run check:budget`: passed; initial JavaScript 38,879 B, CSS 21.99 KB, all scene images below 300 KB.
+- `npm run build`: passed and produced `dist/index.html`.
+- Playwright Axe integration: zero serious or critical violations on landing, demo, gallery, privacy, terms, and 404.
+- `/opt/fleet/lib/verify-url.sh`: passed on the live root, `/demo`, and `/gallery`, with one H1, `lang=en`, main landmark, image alternatives, labeled buttons, and no console errors.
+- Live cold claim run: 17/17 passed against <https://wallpage.sociobot.in>.
+- Live route/browser/accessibility run: 12/12 passed.
+- Live status: `/`, `/demo`, `/gallery`, `/privacy`, and `/terms` return 200; `/does-not-exist` returns 404.
+- Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 1.0 s, LCP 1.2 s, CLS 0, TBT 10 ms.
+
+Evidence files are under `/tmp/wallpage-polish-2/`. Key screenshots are `live/landing-390.png`, `live/demo-390.png`, `live/gallery-1280.png`, and `live/404-390.png`. The Lighthouse report is `live/lighthouse.json`.
+
+## Run locally
 
 ```sh
 npm ci
@@ -31,10 +45,11 @@ npm run test:claims
 npm run test:e2e
 npm run check:budget
 npm run build
+npm run preview
 ```
 
-Use `https://wallpage.sociobot.in/?demo=1` for the isolated live sample. Run each exact test command in `.factory/claims.json` individually when verifying claim coverage.
+Set `PLAYWRIGHT_BASE_URL=https://wallpage.sociobot.in` to run the claim or route suites against production without starting the local preview server.
 
-## Work left
+## Known gaps and next steps
 
-Resolve every finding in `.factory/review-2.md`, then rerun the review from a fresh browser context and clean clone. The product cannot receive PASS until no finding and no untested claim remains.
+None. No review finding or claim is deferred.
