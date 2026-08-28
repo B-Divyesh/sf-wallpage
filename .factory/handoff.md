@@ -26,6 +26,8 @@ Repaired every BLOCKING and significant finding in `.factory/review-1.md` while 
 - Evidence screenshots were visually reviewed at `/tmp/wallpage-polish-1/landing-390.png`, `/tmp/wallpage-polish-1/demo-390.png`, and `/tmp/wallpage-polish-1/404-390.png`.
 - Clean clone: `/tmp/wallpage-clean-polish-1-367c16c` cloned from `367c16c083a8801f1982c4002753e9604cc4532f`; `npm ci` reported 0 vulnerabilities. All ten exact `.factory/claims.json` commands passed separately. Then `npm test` (16), `npm run test:e2e` (22), `npm run check:budget`, and `npm run build` passed.
 - The live recheck and finding-by-finding evidence map are in `.factory/polish-1.md`.
+- Deployment: `dist/` was deployed to Azure Static Web Apps production for `sf-wallpage` through the configured static work order. Azure returned `https://salmon-beach-009a16f0f.7.azurestaticapps.net`; its custom domain `https://wallpage.sociobot.in/` serves the new `index-P---bj2b.js` shell.
+- Post-deploy fresh-context checks passed at `/`, `/?demo=1`, `/demo?scene=cloud-chamber`, and `/does-not-exist`. The stale demo scene parameter still opens Moon tide, normal storage stayed empty, Reset demo cleared its namespace, the recovery route returned HTTP 404, and live AxeBuilder reported 0 serious/critical violations.
 
 ## How to run
 
