@@ -33,6 +33,7 @@ Production was uploaded from `dist/` through `/opt/fleet/lib/deploy-static.sh wa
 - Live Lighthouse — 100 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; FCP 0.9 s, LCP 1.1 s, TBT 0 ms, CLS 0.
 - Cold 390 px root — correct first-screen job, audience, sample action, and facts: `/tmp/wallpage-polish-3/live/landing-390.png`.
 - Cold demo — fixed Moon tide, persistent isolated-demo banner and controls: `/tmp/wallpage-polish-3/live/demo-390.png`.
+- Cold `/?demo=1` — fixed Moon tide, banner, Reset demo, Start for real, empty storage, and deployed build stamp: `/tmp/wallpage-polish-3/live/query-demo-390.png`.
 - Live support guide — Chromium-only tested boundary: `/tmp/wallpage-polish-3/live/support-1280.png`.
 - Cold unknown route — designed HTTP 404 and recovery: `/tmp/wallpage-polish-3/live/404-390.png`.
 - Exact live route/status/title/focus/canonical/overflow and demo reset/exit results: `/tmp/wallpage-polish-3/live/live-check.json`.
