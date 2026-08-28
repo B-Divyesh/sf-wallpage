@@ -2,7 +2,7 @@
 
 ## Entry point
 
-Open `https://wallpage.sociobot.in/?demo=1`. `/demo` is an equivalent direct route.
+Open `https://wallpage.sociobot.in/demo`. `/?demo=1` is an equivalent legacy entry.
 
 The landing page links to this mode with **Try it with sample data**. It opens Moon tide immediately with the fixed scene setting `sample-moon-tide-2042`.
 
@@ -14,4 +14,4 @@ Demo preferences use only `localStorage["demo:wallpage:settings"]`. Demo mode do
 
 ## Verification
 
-Run `npm run test:claims`. The claim tests enter through `?demo=1`, exercise the sample, check storage and network isolation, and verify offline reload.
+Run `npm run test:claims`. The claim tests enter through `/demo`, exercise the sample, check storage and network isolation, and verify offline reload.

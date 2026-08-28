@@ -5,6 +5,7 @@ export type StoredSettings = {
   maxFps: number;
   brightness: number;
   nightDim: boolean;
+  keepAwake: boolean;
   dimStart: string;
   dimEnd: string;
   seenWelcome: boolean;
@@ -17,6 +18,7 @@ export const defaultSettings: StoredSettings = {
   maxFps: 30,
   brightness: 1,
   nightDim: false,
+  keepAwake: false,
   dimStart: '22:00',
   dimEnd: '07:00',
   seenWelcome: false,

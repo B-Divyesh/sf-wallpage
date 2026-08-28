@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __WALLPAGE_BUILD__: string;
+
 interface ImportMetaEnv {
   readonly VITE_SOCIOBOT_BUY_URL?: string;
   readonly VITE_SOCIOBOT_LICENSE_VERIFY_URL?: string;

@@ -32,6 +32,10 @@
       "rewrite": "/index.html"
     },
     {
+      "route": "/gallery",
+      "rewrite": "/index.html"
+    },
+    {
       "route": "/privacy",
       "rewrite": "/index.html"
     },

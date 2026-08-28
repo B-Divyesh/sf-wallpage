@@ -26,7 +26,7 @@ describe('release contract', () => {
 
   test('static host serves known routes and returns its designed 404 for unknown routes', async () => {
     const config = JSON.parse(await readFile(resolve(root, 'public/staticwebapp.config.json'), 'utf8')) as { routes: Array<{ route: string; rewrite?: string }>; responseOverrides?: Record<string, { rewrite?: string }> };
-    for (const route of ['/', '/demo', '/privacy', '/terms']) {
+    for (const route of ['/', '/demo', '/gallery', '/privacy', '/terms']) {
       expect(config.routes).toContainEqual(expect.objectContaining({ route, rewrite: '/index.html' }));
     }
     expect(config.routes.some(({ route }) => route === '/*')).toBe(false);

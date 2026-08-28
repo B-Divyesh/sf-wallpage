@@ -4,11 +4,11 @@ Turn an idle screen into moving art.
 
 Wallpage is for TVs, wall displays, and second monitors that need a calm display. Each moving scene is drawn in the browser without a video stream.
 
-[Try Wallpage with sample data](https://wallpage.sociobot.in/?demo=1). The fixed Moon tide sample uses separate `demo:` storage and can be reset at any time.
+[Try Wallpage with sample data](https://wallpage.sociobot.in/demo). The Moon tide sample uses separate browser storage. You can reset it at any time.
 
 The gallery has eight free scenes. Collector adds two scenes for $19 once. Those scenes unlock only after Sociobot verifies a license.
 
-Wallpage has no account, ads, analytics, external fonts, or cross-origin demo traffic. The demo reopens offline after its first visit.
+The demo contacts only wallpage.sociobot.in. It has no account, ads, analytics, or downloaded fonts. The demo reopens offline after its first visit and keeps drawing its scene.
 
 ## Run locally
 
@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-The command prints a local URL. Open `/?demo=1` for the isolated sample.
+The command prints a local URL. Open `/demo` for the isolated sample.
 
 ## Test and build
 
@@ -32,7 +32,7 @@ npm run build
 npm run preview
 ```
 
-`npm run build` type-checks the app and writes the static site to `dist/`. The deploy artifact keeps `index.html` at the root.
+`npm run build` type-checks the app and writes the static site to `dist/`. The deploy folder contains `dist/index.html`.
 
 The budget check caps initial JavaScript at 200 KB. It caps CSS files at 50 KB and scene images at 300 KB each.
 
@@ -48,13 +48,23 @@ The budget check caps initial JavaScript at 200 KB. It caps CSS files at 50 KB a
 
 These keyboard shortcuts change scenes, playback, the clock, settings, and the guide. Gallery controls fade after 4.5 seconds and return on pointer movement.
 
+The Share control creates a link for the current scene and seed. The fullscreen button and `F` key enter or leave fullscreen when the browser supports it.
+
+Display settings control rotation, clock, date, brightness, night dimming, and the animation frame-rate cap. Keep screen awake asks a supported device to prevent display sleep while a scene plays.
+
 Visible demo controls have touch targets at least 44 by 44 CSS pixels at 390px width.
+
+## Display support
+
+Wallpage supports current Chrome, Edge, Firefox, and Safari browsers with Canvas 2D. It is tested at a 1280 by 720 TV-like viewport with keyboard-only controls. The gallery remains usable when fullscreen or Screen Wake Lock is unavailable.
+
+Casting comes from your browser or device menu. Wallpage does not control or promise support for a specific casting device.
 
 ## Collector purchase and restore
 
 Copy `.env.example` to `.env.local` to test another public Sociobot configuration. Production uses the committed checkout and verifier URLs in `.env.production`.
 
-The browser sends a restored license only to the Sociobot verifier. A saved browser value cannot unlock Collector without a current positive response.
+Without a saved license, opening the gallery does not contact the verifier. Wallpage sends a saved or entered license only to the Sociobot verifier. Collector unlocks only when Sociobot confirms the saved license is active.
 
 Payment happens on the Sociobot checkout. Wallpage does not embed a payment provider.
 
@@ -64,7 +74,7 @@ Wallpage uses Vite and vanilla TypeScript. The browser test suite proves offline
 
 Read the [privacy policy](https://wallpage.sociobot.in/privacy) and [terms](https://wallpage.sociobot.in/terms). Demo behavior is documented in [.factory/demo.md](.factory/demo.md).
 
-The visual thesis and generated-art provenance are in [.factory/design.md](.factory/design.md). Social and touch images are crops of the same project artwork.
+The visual thesis and generated-art provenance are in [.factory/design.md](.factory/design.md).
 
 ## Deployment
 

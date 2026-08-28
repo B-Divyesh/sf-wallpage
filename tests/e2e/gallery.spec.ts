@@ -17,7 +17,7 @@ test('the first screen states the job, audience, action, and three facts', async
 test('gallery works from welcome through keyboard navigation', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-  await page.goto('/?gallery=1&seed=test-night');
+  await page.goto('/gallery?seed=test-night');
   await expect(page.getByRole('dialog', { name: 'Turn an idle screen into moving art' })).toBeVisible();
   await page.getByRole('button', { name: /Open today’s gallery/ }).click();
   await expect(page.locator('h1')).toHaveCount(1);
@@ -32,7 +32,8 @@ test('gallery works from welcome through keyboard navigation', async ({ page }) 
 });
 
 test('all routes have metadata, focus, and no serious accessibility violations', async ({ page }) => {
-  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/does-not-exist']) {
+  await page.addInitScript(() => localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true })));
+  for (const route of ['/', '/demo', '/gallery', '/privacy', '/terms', '/does-not-exist']) {
     await page.goto(route);
     await expect(page.locator('main h1')).toHaveCount(1);
     await expect(page.locator('main h1')).toBeFocused();
@@ -44,13 +45,24 @@ test('all routes have metadata, focus, and no serious accessibility violations',
   }
 });
 
+test('every route uses the shared navigation, footer, and canonical URL', async ({ page }) => {
+  for (const route of ['/', '/demo', '/gallery', '/privacy', '/terms']) {
+    await page.goto(route);
+    await expect(page.getByRole('link', { name: 'Wallpage home' })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link')).toHaveCount(3);
+    await expect(page.getByText('Wallpage turns idle displays into moving art.')).toBeAttached();
+    await expect(page.getByText(/Built by Param Factory · v1\.2\.0 · build [0-9a-f]{7}/)).toBeAttached();
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://wallpage.sociobot.in${route === '/' ? '/' : route}`);
+  }
+});
+
 test('390px landing, demo, and settings stay operable without horizontal overflow', async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/does-not-exist']) {
+  for (const route of ['/', '/demo', '/gallery', '/privacy', '/terms', '/does-not-exist']) {
     await page.goto(route);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), route).toBeLessThanOrEqual(0);
   }
-  await page.goto('/?demo=1');
+  await page.goto('/demo');
   await expect(page.getByRole('button', { name: 'Open settings' })).toBeVisible();
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.getByRole('dialog', { name: 'Adjust the idle display' })).toBeVisible();
@@ -61,7 +73,7 @@ test('390px landing, demo, and settings stay operable without horizontal overflo
 
 test('320px layouts reflow without losing content', async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 320, height: 640 } });
-  for (const route of ['/', '/?demo=1', '/privacy', '/terms', '/does-not-exist']) {
+  for (const route of ['/', '/demo', '/gallery', '/privacy', '/terms', '/does-not-exist']) {
     await page.goto(route);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), route).toBeLessThanOrEqual(0);
     await expect(page.locator('main h1')).toBeAttached();
@@ -72,7 +84,7 @@ test('320px layouts reflow without losing content', async ({ browser }) => {
 test('reduced-motion visitors start paused and can opt in', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
-  await page.goto('/?demo=1');
+  await page.goto('/demo');
   const play = page.getByRole('button', { name: 'Play animation' });
   await expect(play).toBeVisible();
   await play.click();
@@ -100,7 +112,7 @@ test('Collector ignores a tampered local flag and stays locked', async ({ page }
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('wallpage:collector', 'verified');
   });
-  await page.goto('/?gallery=1');
+  await page.goto('/gallery');
   await page.getByRole('button', { name: 'Open scene library' }).click();
   await expect(page.locator('[data-scene="fault-garden"]')).toHaveAttribute('data-locked', 'true');
   await expect(page.locator('[data-scene="aurora-basin"]')).toHaveAttribute('data-locked', 'true');
@@ -116,7 +128,7 @@ test('Collector unlocks only after a positive entitlement response', async ({ pa
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('sb_license:wallpage', 'signed-valid-license');
   });
-  await page.goto('/?gallery=1');
+  await page.goto('/gallery');
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/Collector is active for this session/);
   await expect(page.locator('#buy-collector')).toBeHidden();
@@ -133,7 +145,7 @@ test('expired licenses remain locked with an honest state', async ({ page }) => 
     localStorage.setItem('wallpage:settings', JSON.stringify({ seenWelcome: true }));
     localStorage.setItem('sb_license:wallpage', 'tampered-license');
   });
-  await page.goto('/?gallery=1');
+  await page.goto('/gallery');
   await page.getByRole('button', { name: 'Open settings' }).click();
   await expect(page.locator('#collector-status')).toHaveText(/license has expired/i);
   await page.getByRole('button', { name: 'Close settings' }).click();

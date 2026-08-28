@@ -5,7 +5,7 @@ import { scenes } from './scene-catalog';
 import type { SceneRenderer } from './scenes';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
-const BUILD_LABEL = 'v1.1.0 · repair 1';
+const BUILD_LABEL = `v1.2.0 · build ${__WALLPAGE_BUILD__}`;
 const DEMO_SETTINGS_KEY = 'demo:wallpage:settings';
 const DEMO_SEED = 'sample-moon-tide-2042';
 const SITE_ORIGIN = 'https://wallpage.sociobot.in';
@@ -39,8 +39,15 @@ function routeFocus() {
   });
 }
 
-function siteHeader() {
-  return `<header class="site-header"><a class="wordmark" href="/" aria-label="Wallpage home"><span></span>Wallpage</a><nav aria-label="Main navigation"><a href="/?demo=1">Demo</a><a href="/?gallery=1">Gallery</a><a href="/privacy">Privacy</a></nav></header>`;
+type SiteRoute = 'home' | 'demo' | 'gallery' | 'privacy' | 'terms' | '404';
+
+function siteNavigation(current: SiteRoute) {
+  const link = (href: string, label: string, route: SiteRoute) => `<a href="${href}"${current === route ? ' aria-current="page"' : ''}>${label}</a>`;
+  return `<nav aria-label="Main navigation">${link('/demo', 'Demo', 'demo')}${link('/gallery', 'Gallery', 'gallery')}${link('/privacy', 'Privacy', 'privacy')}</nav>`;
+}
+
+function siteHeader(current: SiteRoute) {
+  return `<header class="site-header"><a class="wordmark" href="/" aria-label="Wallpage home"${current === 'home' ? ' aria-current="page"' : ''}><span></span>Wallpage</a>${siteNavigation(current)}</header>`;
 }
 
 function siteFooter(className = 'site-footer') {
@@ -72,13 +79,13 @@ function renderLegal(path: string) {
   );
   app.innerHTML = `
     <div class="legal-shell">
-      ${siteHeader()}
+      ${siteHeader(privacy ? 'privacy' : 'terms')}
       <main id="main" class="legal-copy">
         <p class="eyebrow">Plain-language policy · 28 August 2026</p>
         <h1 tabindex="-1">${privacy ? 'Privacy on your idle display' : 'Terms for using Wallpage'}</h1>
         ${privacy ? `
           <h2>What stays on this device</h2><p>Your display settings stay in this browser. Demo settings use a separate temporary storage key.</p><p>Wallpage has no accounts, ads, analytics, or tracking cookies.</p>
-          <h2>When Wallpage uses the network</h2><p>Gallery files come from Wallpage. Restoring Collector sends the license key to the Sociobot verifier.</p><p>Collector checkout opens on Sociobot, outside Wallpage.</p>
+          <h2>When Wallpage uses the network</h2><p>Gallery files come from Wallpage. Wallpage sends a saved or entered Collector license only to the Sociobot verifier.</p><p>Collector checkout opens on Sociobot, outside Wallpage.</p>
           <h2>Delete your data</h2><p>Use “Reset local data” in Display settings. In demo mode, use “Reset demo.” You can also clear this site’s browser data.</p><p>Questions can be sent to <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p>
         ` : `
           <h2>Using Wallpage</h2><p>Wallpage is provided as a browser-based ambient display. You may use it personally or in a workplace display. Do not resell the service, interfere with its operation, or represent its generative scenes as your own downloadable collection.</p>
@@ -95,22 +102,22 @@ function renderLegal(path: string) {
 
 function renderNotFound() {
   setMetadata('Page not found — Wallpage', 'This Wallpage address does not exist. Return to the gallery.', '/404');
-  app.innerHTML = `<div class="legal-shell not-found">${siteHeader()}<main id="main" class="legal-copy"><p class="eyebrow">404 · Lost scene</p><h1 tabindex="-1">This page was not found</h1><p>The address does not lead to a Wallpage scene or guide.</p><p><a class="primary-button" href="/">Return to Wallpage</a></p></main>${siteFooter('legal-footer')}<div id="route-status" class="sr-only" aria-live="polite"></div></div>`;
+  app.innerHTML = `<div class="legal-shell not-found">${siteHeader('404')}<main id="main" class="legal-copy"><p class="eyebrow">404 · Lost scene</p><h1 tabindex="-1">This page was not found</h1><p>The address does not lead to a Wallpage scene or guide.</p><p><a class="primary-button" href="/">Return to Wallpage</a></p></main>${siteFooter('legal-footer')}<div id="route-status" class="sr-only" aria-live="polite"></div></div>`;
   routeFocus();
 }
 
 function renderLanding() {
   setMetadata('Wallpage — moving art for idle screens', 'Turn a TV, wall display, or second monitor into a calm gallery of moving browser scenes.', '/');
   app.innerHTML = `<div class="landing-shell">
-    ${siteHeader()}
+    ${siteHeader('home')}
     <main id="main">
       <section class="landing-hero" aria-labelledby="landing-title">
         <div class="hero-art"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="1200" height="800" alt="A fictional tidal observatory with dark mineral pools and low fog" decoding="async" fetchpriority="high"></picture></div>
-        <div class="hero-copy"><p class="eyebrow">Browser gallery for idle displays</p><h1 id="landing-title" tabindex="-1">Turn an idle screen into moving art</h1><p class="hero-support">For TVs, wall displays, and second monitors that need a calm display.</p><div class="hero-actions"><a class="primary-button" href="/?demo=1">Try it with sample data</a><span>Opens a running sample scene and its controls.</span></div><ul class="plain-facts"><li>Runs in your browser.</li><li>No account or ads.</li><li>Eight scenes free; Collector is $19 once.</li></ul></div>
+        <div class="hero-copy"><p class="eyebrow">Browser gallery for idle displays</p><h1 id="landing-title" tabindex="-1">Turn an idle screen into moving art</h1><p class="hero-support">For TVs, wall displays, and second monitors that need a calm display.</p><div class="hero-actions"><a class="primary-button" href="/demo">Try it with sample data</a><span>Opens a running sample scene and its controls.</span></div><ul class="plain-facts"><li>Runs in your browser.</li><li>No account or ads.</li><li>Eight scenes free; Collector is $19 once.</li></ul></div>
       </section>
-      <section class="landing-section preview-section" aria-labelledby="preview-title"><div><p class="eyebrow">Live preview</p><h2 id="preview-title">See the gallery before you leave it running</h2><p>Moon tide is ready in the sample gallery. Pause it, change scenes, show the clock, or adjust the display.</p><a class="text-link" href="/?demo=1">Open the Moon tide sample →</a></div><div class="preview-slate" role="img" aria-label="Preview of the Moon tide scene"><span>02 / 10</span><strong>Moon tide</strong><small>Layered tidal contours move beneath a low copper moon.</small></div></section>
+      <section class="landing-section preview-section" aria-labelledby="preview-title"><div><p class="eyebrow">Sample scene</p><h2 id="preview-title">See the gallery before you leave it running</h2><p>Moon tide is ready in the sample gallery. Pause it, change scenes, show the clock, or adjust the display.</p><a class="text-link" href="/demo">Open the Moon tide sample →</a></div><div class="preview-slate" role="img" aria-label="Preview of the Moon tide scene"><span>02 / 10</span><strong>Moon tide</strong><small>Layered tidal contours move beneath a low copper moon.</small></div></section>
       <section class="landing-section" aria-labelledby="works-title"><p class="eyebrow">How it works</p><h2 id="works-title">Set up an idle display in three steps</h2><ol class="steps"><li><strong>Open a scene.</strong><span>Use a TV browser or this tab on a second monitor.</span></li><li><strong>Set the display.</strong><span>Choose rotation, clock, brightness, and night dimming.</span></li><li><strong>Leave it running.</strong><span>The controls move aside while the scene stays visible.</span></li></ol></section>
-      <section class="landing-section split-section"><div><p class="eyebrow">Privacy</p><h2>What Wallpage does not do</h2><p>Wallpage has no account, ads, or analytics. Display settings stay in this browser. A Collector license contacts Sociobot only when you restore it.</p><a class="text-link" href="/privacy">Read the privacy policy →</a></div><div><p class="eyebrow">Optional Collector</p><h2>Add two scenes for $19 once</h2><p>The free gallery has eight scenes. Collector adds Fault garden and Aurora basin after Sociobot verifies the license.</p><a class="secondary-button" href="https://api.sociobot.in/api/v1/products/wallpage/checkout" rel="noreferrer">See the $19 Collector price</a></div></section>
+      <section class="landing-section split-section"><div><p class="eyebrow">Privacy</p><h2>What Wallpage does not do</h2><p>Wallpage has no account, ads, or analytics. Display settings stay in this browser. Wallpage contacts Sociobot to check or restore a Collector license.</p><a class="text-link" href="/privacy">Read the privacy policy →</a></div><div><p class="eyebrow">Optional Collector</p><h2>Add two scenes for $19 once</h2><p>The free gallery has eight scenes. Collector adds Fault garden and Aurora basin after Sociobot verifies the license.</p><p>Sociobot manages the checkout outside Wallpage.</p><a class="secondary-button" href="https://api.sociobot.in/api/v1/products/wallpage/checkout" rel="noreferrer">Open checkout — $19 once (external)</a></div></section>
     </main>
     ${siteFooter()}
     <div id="route-status" class="sr-only" aria-live="polite"></div>
@@ -119,8 +126,8 @@ function renderLanding() {
 }
 
 const queryAtLoad = new URLSearchParams(location.search);
-const isDemoRoute = location.pathname === '/demo' || (location.pathname === '/' && queryAtLoad.get('demo') === '1');
-const isGalleryRoute = location.pathname === '/' && (queryAtLoad.has('gallery') || queryAtLoad.has('scene') || queryAtLoad.has('seed'));
+const isDemoRoute = /^\/demo\/?$/.test(location.pathname) || (location.pathname === '/' && queryAtLoad.get('demo') === '1');
+const isGalleryRoute = /^\/gallery\/?$/.test(location.pathname) || (location.pathname === '/' && (queryAtLoad.has('gallery') || queryAtLoad.has('scene') || queryAtLoad.has('seed')));
 
 if (/^\/(privacy|terms)\/?$/.test(location.pathname)) renderLegal(location.pathname);
 else if (isDemoRoute || isGalleryRoute) renderGallery(isDemoRoute);
@@ -130,7 +137,7 @@ else renderNotFound();
 addEventListener('pageshow', () => routeFocus());
 
 function renderGallery(demoMode = false) {
-  setMetadata(demoMode ? 'Demo — Wallpage' : 'Gallery — Wallpage', demoMode ? 'Try a fixed Moon tide sample without changing your Wallpage settings.' : 'Run Wallpage scenes on a TV, wall display, or second monitor.', demoMode ? '/?demo=1' : '/');
+  setMetadata(demoMode ? 'Demo — Wallpage' : 'Gallery — Wallpage', demoMode ? 'Try a fixed Moon tide sample without changing your Wallpage settings.' : 'Run Wallpage scenes on a TV, wall display, or second monitor.', demoMode ? '/demo' : '/gallery');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const settingsKey = demoMode ? DEMO_SETTINGS_KEY : 'wallpage:settings';
   let settings = readSettings(window.localStorage, settingsKey);
@@ -146,6 +153,9 @@ function renderGallery(demoMode = false) {
   let rotationTimer = 0;
   let chromeTimer = 0;
   let lastClockMinute = -1;
+  type WakeSentinel = { released: boolean; release: () => Promise<void>; addEventListener: (type: string, listener: () => void) => void };
+  type WakeNavigator = Navigator & { wakeLock?: { request: (type: 'screen') => Promise<WakeSentinel> } };
+  let wakeLock: WakeSentinel | null = null;
 
   const query = new URLSearchParams(location.search);
   const licenseFromReturn = demoMode ? undefined : query.get('license')?.trim();
@@ -170,9 +180,9 @@ function renderGallery(demoMode = false) {
       <canvas id="scene" aria-hidden="true"></canvas>
       <div class="scene-fallback" role="img" aria-label="A dark tidal observatory in blue-green fog"></div>
       <div class="dim-layer" aria-hidden="true"></div>
-      <header class="masthead chrome">
+      <header class="masthead site-header chrome">
         <a class="wordmark" href="/" aria-label="Wallpage home"><span></span>Wallpage</a>
-        <nav class="gallery-nav" aria-label="Gallery navigation"><button class="button-reset nav-button" id="open-help">Guide</button><a href="/?demo=1">Demo</a><a href="/privacy">Privacy</a><p><span id="scene-number">01</span> / <span id="scene-count">${scenes.length.toString().padStart(2, '0')}</span></p></nav>
+        <div class="gallery-header-actions">${siteNavigation(demoMode ? 'demo' : 'gallery')}<button class="button-reset nav-button" id="open-help">Guide</button><p><span id="scene-number">01</span> / <span id="scene-count">${scenes.length.toString().padStart(2, '0')}</span></p></div>
       </header>
       <section class="scene-caption chrome" aria-live="polite" aria-atomic="true">
         <p class="eyebrow" id="scene-kind">${demoMode ? 'Sample scene setting' : 'Today’s scene setting'} · ${escapeText(seed)}</p>
@@ -194,8 +204,8 @@ function renderGallery(demoMode = false) {
         <button id="fullscreen" class="icon-button" aria-label="Enter fullscreen">${icon('expand')}</button>
         <button id="settings" class="icon-button" aria-label="Open settings">${icon('settings')}</button>
       </nav>
-      <footer class="corner-footer chrome"><span>This scene runs in your browser.</span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><span>Built by Param Factory · ${BUILD_LABEL}</span></footer>
-      ${demoMode ? '<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><button type="button" id="reset-demo">Reset demo</button><a href="/?gallery=1" id="start-real">Start for real</a></aside>' : ''}
+      <footer class="corner-footer chrome"><span>Wallpage turns idle displays into moving art.</span><nav aria-label="Footer navigation"><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><span>Built by Param Factory · ${BUILD_LABEL}</span></footer>
+      ${demoMode ? '<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><button type="button" id="reset-demo">Reset demo</button><a href="/gallery" id="start-real">Start for real</a></aside>' : ''}
       <div class="connection" id="connection" role="status" hidden>Offline · the gallery keeps playing</div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <div id="route-status" class="sr-only" aria-live="polite"></div>
@@ -226,14 +236,15 @@ function renderGallery(demoMode = false) {
         <div class="setting-row"><div><label for="date-toggle">Show date</label><p>Keep the calendar below the clock.</p></div><input id="date-toggle" class="switch" type="checkbox"></div>
         <div class="setting-row"><div><label for="night-dim">Dim at night</label><p>Dim scenes during these hours.</p></div><input id="night-dim" class="switch" type="checkbox"></div>
         <div class="time-pair"><label>Dim from <input id="dim-start" type="time"></label><label>Until <input id="dim-end" type="time"></label></div>
-        <section class="collector-panel" aria-labelledby="collector-heading"><p class="eyebrow">Optional</p><h3 id="collector-heading">Collector · $19 once</h3><p id="collector-status">Add Fault garden and Aurora basin. Paid scenes stay locked until Sociobot verifies the license.</p><div class="license-actions"><a class="secondary-button" id="buy-collector" target="_blank" rel="noreferrer">See the $19 Collector price</a><button class="secondary-button" type="button" id="show-license">Restore Collector license</button></div><div class="license-form" id="license-form" hidden><label for="license-key">License key</label><div><input id="license-key" autocomplete="off" spellcheck="false" aria-describedby="license-message"><button class="primary-button" type="button" id="verify-license">Verify license</button></div><p id="license-message" role="status" aria-live="polite"></p></div></section>
+        <div class="setting-row"><div><label for="wake-lock">Keep screen awake</label><p id="wake-status">Ask this device to keep the display on.</p></div><input id="wake-lock" class="switch" type="checkbox" aria-describedby="wake-status"></div>
+        <section class="collector-panel" aria-labelledby="collector-heading"><p class="eyebrow">Optional</p><h3 id="collector-heading">Collector · $19 once</h3><p id="collector-status">Add Fault garden and Aurora basin. Paid scenes stay locked until Sociobot verifies the license.</p><div class="license-actions"><a class="secondary-button" id="buy-collector" target="_blank" rel="noreferrer">Open checkout — $19 once (external)</a><button class="secondary-button" type="button" id="show-license">Restore Collector license</button></div><p>Sociobot manages the checkout outside Wallpage.</p><div class="license-form" id="license-form" hidden><label for="license-key">License key</label><div><input id="license-key" autocomplete="off" spellcheck="false" aria-describedby="license-message"><button class="primary-button" type="button" id="verify-license">Verify license</button></div><p id="license-message" role="status" aria-live="polite"></p></div></section>
         <button class="text-button danger-button" type="button" id="reset-data">${demoMode ? 'Reset demo settings' : 'Reset local data'}</button>
       </form>
     </dialog>
 
     <dialog id="help-dialog" class="panel-dialog help-dialog" aria-labelledby="help-title">
       <div class="dialog-heading"><div><p class="eyebrow">Wallpage guide</p><h2 id="help-title">Use Wallpage on a larger screen</h2></div><button class="icon-button close-dialog" aria-label="Close guide">${icon('close')}</button></div>
-      <div class="help-layout"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="The fictional tidal observatory artwork made for Wallpage" decoding="async" loading="lazy"></picture><div><p>Each moving scene is drawn in this browser. The gallery uses no video stream, account, or ads.</p><h3>Put it on a larger screen</h3><ol><li>Open this page in a TV browser, or cast this tab from your browser menu.</li><li>Press <kbd>F</kbd> or the expand button for fullscreen.</li><li>Move the pointer away. The controls fade after 4.5 seconds.</li></ol><h3>Show it on an idle display</h3><p>Keep this browser tab open on a TV, wall display, or second monitor.</p><h3>Keyboard and remote controls</h3><p><kbd>←</kbd>/<kbd>J</kbd> previous · <kbd>→</kbd>/<kbd>K</kbd> next · <kbd>Space</kbd> pause · <kbd>C</kbd> clock · <kbd>S</kbd> settings · <kbd>H</kbd> guide.</p></div></div>
+      <div class="help-layout"><picture><source srcset="/assets/tidal-observatory.avif" type="image/avif"><source srcset="/assets/tidal-observatory.webp" type="image/webp"><img src="/assets/tidal-observatory.jpg" width="900" height="600" alt="The fictional tidal observatory artwork made for Wallpage" decoding="async" loading="lazy"></picture><div><p>Each moving scene is drawn in this browser. The gallery uses no video stream, account, or ads.</p><h3>Put it on a larger screen</h3><ol><li>Use a current Chrome, Edge, Firefox, or Safari browser with Canvas 2D.</li><li>To cast, use your browser or device menu. Casting is not controlled by Wallpage.</li><li>Press <kbd>F</kbd> or the expand button for fullscreen. The gallery still works when fullscreen is unavailable.</li><li>Move the pointer away. The controls fade after 4.5 seconds.</li></ol><h3>Show it on an idle display</h3><p>Keep this browser tab open on a TV, wall display, or second monitor. Turn on Keep screen awake when the device supports it.</p><h3>Keyboard and remote controls</h3><p><kbd>←</kbd>/<kbd>J</kbd> previous · <kbd>→</kbd>/<kbd>K</kbd> next · <kbd>Space</kbd> pause · <kbd>C</kbd> clock · <kbd>F</kbd> fullscreen · <kbd>S</kbd> settings · <kbd>H</kbd> guide.</p></div></div>
     </dialog>`;
 
   const canvas = document.querySelector<HTMLCanvasElement>('#scene')!;
@@ -326,6 +337,44 @@ function renderGallery(demoMode = false) {
     scheduleRotation();
   }
 
+  function updateWakeLockStatus(message?: string) {
+    const status = document.querySelector<HTMLElement>('#wake-status')!;
+    if (message) status.textContent = message;
+    else if (!(navigator as WakeNavigator).wakeLock) status.textContent = 'This browser does not support keeping the screen awake.';
+    else if (wakeLock && !wakeLock.released) status.textContent = 'The screen will stay awake while this scene plays.';
+    else status.textContent = 'Ask this device to keep the display on.';
+  }
+
+  async function releaseWakeLock() {
+    const active = wakeLock;
+    wakeLock = null;
+    if (active && !active.released) await active.release().catch(() => undefined);
+    updateWakeLockStatus();
+  }
+
+  async function acquireWakeLock() {
+    const wakeApi = (navigator as WakeNavigator).wakeLock;
+    if (!settings.keepAwake || paused || document.visibilityState !== 'visible') return;
+    if (wakeLock && !wakeLock.released) return;
+    if (!wakeApi) {
+      settings.keepAwake = false;
+      document.querySelector<HTMLInputElement>('#wake-lock')!.checked = false;
+      localStorage.setItem(settingsKey, JSON.stringify(settings));
+      updateWakeLockStatus();
+      return;
+    }
+    try {
+      wakeLock = await wakeApi.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; updateWakeLockStatus(); });
+      updateWakeLockStatus();
+    } catch {
+      settings.keepAwake = false;
+      document.querySelector<HTMLInputElement>('#wake-lock')!.checked = false;
+      localStorage.setItem(settingsKey, JSON.stringify(settings));
+      updateWakeLockStatus('This device did not allow Wallpage to keep the screen awake.');
+    }
+  }
+
   function scheduleRotation() {
     window.clearInterval(rotationTimer);
     if (settings.rotationMinutes > 0) {
@@ -372,6 +421,8 @@ function renderGallery(demoMode = false) {
     const button = document.querySelector<HTMLButtonElement>('#pause')!;
     button.innerHTML = icon(paused ? 'play' : 'pause');
     button.setAttribute('aria-label', paused ? 'Play animation' : 'Pause animation');
+    if (paused) void releaseWakeLock();
+    else void acquireWakeLock();
     showToast(paused ? 'Scene paused' : 'Scene playing');
   }
 
@@ -396,7 +447,7 @@ function renderGallery(demoMode = false) {
       lastClockMinute = now.getMinutes();
       clock.style.setProperty('--drift-x', `${((now.getMinutes() * 17) % 25) - 12}px`);
       clock.style.setProperty('--drift-y', `${((now.getMinutes() * 11) % 17) - 8}px`);
-      applySettings();
+      gallery.classList.toggle('night-dimmed', settings.nightDim && isWithinNightSchedule(now, settings.dimStart, settings.dimEnd));
     }
   }
 
@@ -421,6 +472,7 @@ function renderGallery(demoMode = false) {
     document.querySelector<HTMLInputElement>('#brightness')!.value = String(Math.round(settings.brightness * 100));
     document.querySelector<HTMLInputElement>('#date-toggle')!.checked = settings.date;
     document.querySelector<HTMLInputElement>('#night-dim')!.checked = settings.nightDim;
+    document.querySelector<HTMLInputElement>('#wake-lock')!.checked = settings.keepAwake;
     document.querySelector<HTMLInputElement>('#dim-start')!.value = settings.dimStart;
     document.querySelector<HTMLInputElement>('#dim-end')!.value = settings.dimEnd;
     updateCollectorPanel();
@@ -512,6 +564,9 @@ function renderGallery(demoMode = false) {
     try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }
     catch { showToast('Fullscreen is not available in this browser.'); }
   });
+  document.addEventListener('fullscreenchange', () => {
+    document.querySelector<HTMLButtonElement>('#fullscreen')!.setAttribute('aria-label', document.fullscreenElement ? 'Leave fullscreen' : 'Enter fullscreen');
+  });
   document.querySelector('#library')!.addEventListener('click', () => { drawSceneGrid(); showModal(libraryDialog); });
   document.querySelector('#settings')!.addEventListener('click', () => { populateSettings(); showModal(settingsDialog); });
   document.querySelector('#open-help')!.addEventListener('click', () => showModal(helpDialog));
@@ -526,6 +581,7 @@ function renderGallery(demoMode = false) {
       pauseButton.innerHTML = icon('pause');
       pauseButton.setAttribute('aria-label', 'Pause animation');
     }
+    void acquireWakeLock();
     void startRenderer();
     wakeChrome();
   });
@@ -547,6 +603,11 @@ function renderGallery(demoMode = false) {
   document.querySelector('#brightness')!.addEventListener('input', (event) => { settings.brightness = Number((event.target as HTMLInputElement).value) / 100; saveSettings(); });
   document.querySelector('#date-toggle')!.addEventListener('change', (event) => { settings.date = (event.target as HTMLInputElement).checked; saveSettings(); });
   document.querySelector('#night-dim')!.addEventListener('change', (event) => { settings.nightDim = (event.target as HTMLInputElement).checked; saveSettings(); });
+  document.querySelector('#wake-lock')!.addEventListener('change', (event) => {
+    settings.keepAwake = (event.target as HTMLInputElement).checked;
+    saveSettings();
+    if (settings.keepAwake) void acquireWakeLock(); else void releaseWakeLock();
+  });
   document.querySelector('#dim-start')!.addEventListener('change', (event) => { settings.dimStart = (event.target as HTMLInputElement).value; saveSettings(); });
   document.querySelector('#dim-end')!.addEventListener('change', (event) => { settings.dimEnd = (event.target as HTMLInputElement).value; saveSettings(); });
   document.querySelector('#show-license')!.addEventListener('click', () => { const form = document.querySelector<HTMLElement>('#license-form')!; form.hidden = false; document.querySelector<HTMLInputElement>('#license-key')!.focus(); });
@@ -554,7 +615,7 @@ function renderGallery(demoMode = false) {
   document.querySelector('#reset-data')!.addEventListener('click', () => {
     if (demoMode) {
       clearDemoData();
-      location.replace('/?demo=1');
+      location.replace('/demo');
       return;
     }
     if (!confirm('Reset display settings and remove the saved Collector license from this browser?')) return;
@@ -564,11 +625,11 @@ function renderGallery(demoMode = false) {
   document.querySelector<HTMLAnchorElement>('#start-real')?.addEventListener('click', (event) => {
     event.preventDefault();
     clearDemoData();
-    location.assign('/?gallery=1');
+    location.assign('/gallery');
   });
   document.querySelector<HTMLButtonElement>('#reset-demo')?.addEventListener('click', () => {
     clearDemoData();
-    location.replace('/?demo=1');
+    location.replace('/demo');
   });
 
   document.addEventListener('keydown', (event) => {
@@ -605,7 +666,11 @@ function renderGallery(demoMode = false) {
     if (savedLicense && !collectorUnlocked) void verifyLicense(savedLicense);
   });
   addEventListener('offline', updateConnection);
-  addEventListener('beforeunload', () => renderer?.stop());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void acquireWakeLock();
+    else void releaseWakeLock();
+  });
+  addEventListener('beforeunload', () => { renderer?.stop(); void releaseWakeLock(); });
 
   setScene(activeIndex);
   applySettings();
@@ -619,6 +684,9 @@ function renderGallery(demoMode = false) {
   const savedLicense = demoMode ? null : localStorage.getItem(LICENSE_STORAGE_KEY);
   if (savedLicense) void verifyLicense(savedLicense);
   else updateCollectorPanel();
+
+  updateWakeLockStatus();
+  if (settings.keepAwake) void acquireWakeLock();
 
   routeFocus();
 

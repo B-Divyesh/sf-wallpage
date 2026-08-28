@@ -4,28 +4,35 @@
     "claim": "The sample opens with a fixed Moon tide scene and never changes normal Wallpage data.",
     "where": "landing action, demo banner, README",
     "test": "npm run test:claims -- --grep @claim:demo-sandbox",
-    "sandbox": "fresh browser context; seed normal settings, enter from the landing page, change and reset demo settings, start for real, and compare namespaces"
+    "sandbox": "fresh browser context; enter /demo, change and reset demo settings, start for real, and compare storage namespaces"
   },
   {
     "id": "local-rendering",
-    "claim": "Each moving scene is drawn in the browser without a video stream.",
-    "where": "gallery footer, guide, README",
+    "claim": "Each of the ten moving scenes is drawn in the browser without a video stream.",
+    "where": "gallery guide, README",
     "test": "npm run test:claims -- --grep @claim:local-rendering",
-    "sandbox": "fresh demo context; require a sized canvas and assert there are no video, iframe, or media requests"
+    "sandbox": "enter through /demo, use a recorded positive Collector response, then require a sized and changing canvas with no media request for every scene"
   },
   {
     "id": "privacy-no-tracking",
-    "claim": "The gallery has no account, ads, analytics, external fonts, or cross-origin demo traffic.",
+    "claim": "The demo contacts only Wallpage and has no account, ads, analytics, cookies, or downloaded fonts.",
     "where": "landing facts, privacy page, README",
     "test": "npm run test:claims -- --grep @claim:privacy-no-tracking",
-    "sandbox": "fresh demo context; intercept the complete sample flow, require same-origin requests, no cookies or account fields, and demo-prefixed storage only"
+    "sandbox": "fresh demo context; intercept the complete sample flow and require same-origin requests, no cookies or account fields, and demo-prefixed storage only"
+  },
+  {
+    "id": "collector-network",
+    "claim": "The gallery contacts Sociobot only when it checks a saved or entered Collector license.",
+    "where": "landing privacy section, privacy page, README",
+    "test": "npm run test:claims -- --grep @claim:collector-network",
+    "sandbox": "two fresh real-gallery contexts; assert no verifier request without a license and exactly one declared verifier request with a saved license"
   },
   {
     "id": "offline-reload",
-    "claim": "The demo reopens offline after the first visit.",
+    "claim": "The demo reopens offline after its first visit and keeps drawing its scene.",
     "where": "README and offline status",
     "test": "npm run test:claims -- --grep @claim:offline-reload",
-    "sandbox": "fresh demo context; wait for service worker control, reload online, set offline, reload, and require the Moon tide sample"
+    "sandbox": "fresh demo context; wait for service-worker control, go offline, reload, and compare two later canvas frames"
   },
   {
     "id": "scene-count",
@@ -39,7 +46,28 @@
     "claim": "Collector costs $19 once and its two scenes unlock only after Sociobot verifies a license.",
     "where": "landing, settings, terms, README",
     "test": "npm run test:claims -- --grep @claim:collector-license",
-    "sandbox": "start in demo; verify two locked scenes, leave demo, assert price and external Sociobot checkout with no embedded provider, then exercise invalid, offline, and valid verifier outcomes"
+    "sandbox": "enter through demo; assert price and external checkout, negative states, then use a recorded positive response and render both unlocked scenes"
+  },
+  {
+    "id": "display-settings",
+    "claim": "Display settings control rotation, clock, date, brightness, night dimming, frame-rate cap, and local persistence.",
+    "where": "landing, settings, privacy page, README",
+    "test": "npm run test:claims -- --grep @claim:display-settings",
+    "sandbox": "controlled time and timers in demo; verify every display result and demo-only storage, then verify normal settings use the normal same-origin key"
+  },
+  {
+    "id": "share-scene",
+    "claim": "Share creates a link containing the active scene and fixed seed.",
+    "where": "gallery control, README",
+    "test": "npm run test:claims -- --grep @claim:share-scene",
+    "sandbox": "fresh demo context with navigator.share stubbed; change scene and inspect the shared URL"
+  },
+  {
+    "id": "fullscreen",
+    "claim": "The fullscreen button and F key enter and leave fullscreen when supported.",
+    "where": "gallery control, guide, README",
+    "test": "npm run test:claims -- --grep @claim:fullscreen",
+    "sandbox": "fresh demo context with the Fullscreen API stubbed; exercise the button and keyboard shortcut in both directions"
   },
   {
     "id": "controls-fade",
@@ -56,6 +84,20 @@
     "sandbox": "fresh demo context; exercise ArrowRight, Space, C, S, Escape, and H and assert each resulting state"
   },
   {
+    "id": "tv-display-support",
+    "claim": "At 1280 by 720, the gallery works with keyboard-only controls and remains usable without fullscreen.",
+    "where": "landing, guide, README",
+    "test": "npm run test:claims -- --grep @claim:tv-display-support",
+    "sandbox": "fresh 1280 by 720 demo context; use only keyboard input, reject fullscreen, and assert the scene and recovery message remain usable"
+  },
+  {
+    "id": "wake-lock",
+    "claim": "Keep screen awake follows play and visibility state, while unsupported browsers keep the gallery usable.",
+    "where": "settings, guide, README",
+    "test": "npm run test:claims -- --grep @claim:wake-lock",
+    "sandbox": "fresh demo contexts with supported and unsupported Wake Lock fixtures; exercise enable, pause, play, hidden, visible, and fallback states"
+  },
+  {
     "id": "touch-targets",
     "claim": "Visible demo controls have touch targets at least 44 by 44 CSS pixels at 390px width.",
     "where": "README",
@@ -68,5 +110,12 @@
     "where": "README",
     "test": "npm run test:claims -- --grep @claim:asset-budgets",
     "sandbox": "fresh production build; measure emitted initial JavaScript, CSS, AVIF, WebP, and JPEG files"
+  },
+  {
+    "id": "build-output",
+    "claim": "The production build type-checks and writes dist/index.html.",
+    "where": "README",
+    "test": "npm run test:claims -- --grep @claim:build-output",
+    "sandbox": "fresh production build performed by test:claims; assert the built root HTML and deployment configuration exist"
   }
 ]

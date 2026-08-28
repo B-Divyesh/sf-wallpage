@@ -2,7 +2,7 @@
   "name": "Wallpage",
   "short_name": "Wallpage",
   "description": "Moving browser art for TVs, wall displays, and second monitors.",
-  "start_url": "/?gallery=1",
+  "start_url": "/gallery",
   "display": "fullscreen",
   "background_color": "#07100f",
   "theme_color": "#07100f",

@@ -41,12 +41,16 @@ An 8 px base rhythm drives `8, 16, 24, 32, 48, 64`. The scene fills the viewport
 - Left/right or J/K moves between scenes. Space pauses. C toggles the clock. F requests fullscreen. S opens settings. H opens the guide. The remote-friendly dock mirrors these actions.
 - Scene changes crossfade through a short dark exposure, like a projector changing reels. Settings rise from the dock and return to it.
 - Immediate live-region feedback names each state change without interrupting the scene.
+- Landing, demo, gallery, policy, and recovery routes share the same compact wordmark, three-link navigation, product line, and build stamp.
+- Keep screen awake is a labeled display setting. It follows playback and visibility, then yields quietly when the browser lacks Screen Wake Lock.
 
 ## Motion and thermal policy
 
 Environmental motion is slow, continuous, and non-flashing. The default renderer adapts between 30 and 45 fps based on measured frame cost and device capability, caps device pixel ratio, pauses when the page is hidden, and exposes an explicit pause control. All scene clocks derive from elapsed time, not per-frame increments.
 
 With `prefers-reduced-motion`, Wallpage starts paused, scene transitions become instant opacity changes, and the animated hero preview on the welcome state becomes a still image. The user can still opt into playback. Night dimming applies a scene-level veil; the clock shifts position every minute and all overlay chrome times out to mitigate burn-in.
+
+When enabled after a visitor action, Screen Wake Lock is held only while the page is visible and the scene is playing. It is released on pause, page hide, or exit.
 
 ## Original asset plan
 
